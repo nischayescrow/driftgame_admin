@@ -1,11 +1,8 @@
-import "./App.css";
+import "./styles/App.css";
+import { Outlet } from "react-router-dom";
 
 function App() {
-  return (
-    <>
-      <p className="text-3xl text-center font-bold">Drift Game Admin Panle</p>
-    </>
-  );
+  return <Outlet />;
 }
 
 export default App;
