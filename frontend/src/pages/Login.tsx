@@ -2,16 +2,72 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Controller, useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  LoginSchema,
+  type LoginSchemaType,
+} from "../features/auth/schemas/auth.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import InputAdornment from "@mui/material/InputAdornment";
+import { IoEye, IoEyeOff } from "react-icons/io5";
+import { useState } from "react";
+import { login } from "../features/auth/services/auth.service";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "../features/user/user.slice";
+import type { RootState } from "../store/store";
+import toast from "react-hot-toast";
+import {
+  startLoading,
+  stopLoading,
+} from "../components/common/loader/loader.slice";
 
 const Login = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [loginPassEye, setLoginPassEye] = useState(true);
   let {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm({});
+  } = useForm<LoginSchemaType>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: "admin.escrow@gmail.com",
+      password: "admin@2026",
+    },
+  });
 
-  const handleLogin = (data: any) => {};
+  const handleLogin = async (data: any) => {
+    console.log(data);
+    dispatch(startLoading());
+    const loginRes = await login(data);
+    setTimeout(() => dispatch(stopLoading()), 500);
+    
+    console.log("loginRes: ", loginRes);
+
+    if (loginRes && loginRes.status === 200) {
+      dispatch(
+        setUser({
+          access_token: loginRes.data.access_token,
+          data: {
+            id: loginRes.data.user.id,
+            first_name: loginRes.data.user.first_name,
+            last_name: loginRes.data.user.last_name,
+            email: loginRes.data.user.email,
+            email_verified: loginRes.data.user.email_verified,
+            picture: loginRes.data.user.picture,
+            status: loginRes.data.user.status,
+          },
+        }),
+      );
+      toast.success(loginRes.data?.message);
+      navigate("/dashboard");
+    }
+  };
+
+  const handleLoginEye = () => {
+    setLoginPassEye(!loginPassEye);
+  };
 
   return (
     <div className="myContainer flex-1 flex justify-end items-center">
@@ -39,6 +95,7 @@ const Login = () => {
               render={({ field: { onChange, value, name } }) => (
                 <>
                   <TextField
+                    type="text"
                     fullWidth
                     size="small"
                     label="Email"
@@ -47,13 +104,15 @@ const Login = () => {
                     value={value}
                     onChange={onChange}
                   />
-                  <p className="min-h-5"></p>
+                  <p className="min-h-5 text-sm text-red-600">
+                    {errors.email ? errors.email.message : ""}
+                  </p>
                 </>
               )}
             />
           </div>
 
-          {/* Email */}
+          {/* Password */}
           <div className="mb-5">
             <Controller
               name="password"
@@ -64,13 +123,35 @@ const Login = () => {
                     fullWidth
                     size="small"
                     label="Password"
-                    type="password"
+                    type={loginPassEye ? "text" : "password"}
                     variant="outlined"
                     name={name}
                     value={value}
                     onChange={onChange}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="start">
+                            <button
+                              type="button"
+                              className="block p-2 text-xl text-black cursor-pointer"
+                              onClick={handleLoginEye}
+                            >
+                              {loginPassEye ? <IoEyeOff /> : <IoEye />}
+                            </button>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        paddingRight: 0,
+                      },
+                    }}
                   />
-                  <p className="min-h-5"></p>
+                  <p className="min-h-5 text-sm text-red-600">
+                    {errors.password ? errors.password.message : ""}
+                  </p>
                 </>
               )}
             />

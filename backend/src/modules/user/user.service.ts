@@ -124,6 +124,12 @@ export class UserService {
         createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
       }
 
+      // if (createUserDto.email_verified) {
+      //   createUserDto.status = UserStatus.ACTIVE;
+      // }
+
+      createUserDto.status = UserStatus.ACTIVE;
+
       await this.userRepo.create(createUserDto);
 
       return {

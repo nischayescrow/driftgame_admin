@@ -1,13 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { RxHamburgerMenu } from "react-icons/rx";
-import { Controller, useForm } from "react-hook-form";
 import { IoSearch } from "react-icons/io5";
 import { GoArrowRight } from "react-icons/go";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import Avatar from "@mui/material/Avatar";
 import { IoIosArrowDown } from "react-icons/io";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { HiUsers } from "react-icons/hi";
 import { IoGameController } from "react-icons/io5";
@@ -15,9 +14,9 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { TbBoxModel2 } from "react-icons/tb";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
   const [openSideBar, setOpenSideBar] = useState(true);
   const [userMenu, setUserMenu] = useState<null | HTMLElement>(null);
 
@@ -28,20 +27,18 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     setUserMenu(null);
   };
 
-  let {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({});
-
   const toggleSideBar = () => {
     setOpenSideBar(!openSideBar);
   };
 
+  const handleDefaultSearch = () => {};
+  const handleLogout = () => {
+    closeUserMenu();
+    navigate("/", { replace: true });
+  };
+
   return (
-    <div
-      className={`min-w-screen max-w-screen overflow-hidden min-h-screen max-h-screen flex`}
-    >
+    <div className={`flex-1 flex overflow-y-auto`}>
       {/* Sidebar */}
       <div className="border-r border-r-slate-200 flex flex-col">
         {/* Logo */}
@@ -67,7 +64,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             transition: "width 0.5s ease-in-out",
           }}
         >
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-2">
             <li>
               <NavLink
                 to="/dashboard"
@@ -109,13 +106,18 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             <li>
               <Accordion
                 defaultExpanded
-                expanded={openSideBar}
+                // expanded={openSideBar}
                 sx={{
                   "&.MuiAccordion-root": {
                     boxShadow: "none",
                   },
                   "& .MuiAccordionSummary-root": {
                     padding: "0 8px",
+                    minHeight: 36,
+                    maxHeight: 48,
+                  },
+                  "& .MuiAccordionDetails-root": {
+                    padding: "0 10px",
                   },
                 }}
               >
@@ -152,7 +154,6 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
           </ul>
         </div>
       </div>
-
       {/* Dashboard main */}
       <div className="flex-1 overflow-y-auto flex flex-col relative">
         {/* Navbar */}
@@ -172,29 +173,21 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
             <form>
               <div className="">
-                <Controller
-                  name="search"
-                  control={control}
-                  render={({ field: { onChange, value, name } }) => (
-                    <div className="relative">
-                      <input
-                        type="text"
-                        name={name}
-                        value={value}
-                        onChange={onChange}
-                        className=" border border-slate-200 rounded-sm p-1.5 px-10 w-sm placeholder:font-semibold placeholder:text-sm"
-                        placeholder="Search..."
-                      />
+                <div className="relative">
+                  <input
+                    type="text"
+                    onChange={handleDefaultSearch}
+                    className=" border border-slate-200 rounded-sm p-1.5 px-10 w-sm placeholder:font-semibold placeholder:text-sm"
+                    placeholder="Search..."
+                  />
 
-                      <button
-                        type="button"
-                        className="h-full px-2.5 rounded-sm absolute left-0 top-1/2 -translate-y-1/2 cursor-pointer hover:scale-105"
-                      >
-                        <IoSearch className="text-lg" />
-                      </button>
-                    </div>
-                  )}
-                />
+                  <button
+                    type="button"
+                    className="h-full px-2.5 rounded-sm absolute left-0 top-1/2 -translate-y-1/2 cursor-pointer hover:scale-105"
+                  >
+                    <IoSearch className="text-lg" />
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -228,7 +221,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                 horizontal: "left",
               }}
             >
-              <MenuItem onClick={closeUserMenu}>Logout</MenuItem>
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
           </div>
         </div>

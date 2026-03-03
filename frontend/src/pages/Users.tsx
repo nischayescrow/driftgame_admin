@@ -4,8 +4,22 @@ import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
 import Avatar from "@mui/material/Avatar";
 import { IoSearch } from "react-icons/io5";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import { useState } from "react";
+import { HiDotsVertical } from "react-icons/hi";
 
 const Users = () => {
+  const [actionAnc, setActionAnc] = useState<null | HTMLElement>(null);
+
+  const openActions = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setActionAnc(event.currentTarget);
+  };
+
+  const closeActions = () => {
+    setActionAnc(null);
+  };
+
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 210 },
     {
@@ -66,20 +80,60 @@ const Users = () => {
         </>
       ),
     },
+    {
+      field: "",
+      headerName: "Actions",
+      type: "number",
+      width: 70,
+      align: "center",
+      sortable: false,
+      filterable: false,
+      renderCell: () => (
+        <div className="w-full h-full flex justify-center items-center">
+          <button
+            type="button"
+            aria-controls={Boolean(actionAnc) ? "basic-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={Boolean(actionAnc) ? "true" : undefined}
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+              event.preventDefault();
+              openActions(event);
+            }}
+            className="w-full h-full flex justify-center items-center cursor-pointer text-xl p-2"
+          >
+            <HiDotsVertical />
+          </button>
+          <Menu
+            id="basic-menu"
+            anchorEl={actionAnc}
+            open={Boolean(actionAnc)}
+            onClose={closeActions}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "left",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "left",
+            }}
+            slotProps={{
+              list: {
+                "aria-labelledby": "basic-button",
+              },
+            }}
+          >
+            <MenuItem onClick={closeActions}>View</MenuItem>
+            <MenuItem onClick={closeActions}>Edit</MenuItem>
+            <MenuItem onClick={closeActions}>Delete</MenuItem>
+          </Menu>
+        </div>
+      ),
+    },
   ];
 
   const rows = [
     {
-      id: "69a044dbf6d4952f45ab154d1",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
-      email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
-      status: 0,
-    },
-    {
-      id: "69a044dbf6d4952f45ab154d2",
+      id: "507f1f77bcf86cd799439011",
       first_name: "Aarav",
       last_name: "Sharma",
       email: "aarav.sharma94@gmail.com",
@@ -88,93 +142,129 @@ const Users = () => {
       status: 1,
     },
     {
-      id: "69a044dbf6d4952f45ab1543",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
+      id: "507f191e810c19729de860ea",
+      first_name: "Diya",
+      last_name: "Patel",
+      email: "diya.patel.27@gmail.com",
       email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      picture: "https://xsgames.co/randomusers/assets/avatars/female/12.jpg",
+      status: 1,
+    },
+    {
+      id: "507f1f77bcf86cd799439012",
+      first_name: "Vihaan",
+      last_name: "Kumar",
+      email: "vihaan.k.2002@gmail.com",
+      email_verified: false,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/67.jpg",
+      status: 0,
+    },
+    {
+      id: "507f191e810c19729de860eb",
+      first_name: "Ananya",
+      last_name: "Singh",
+      email: "ananya.singh18@outlook.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/female/31.jpg",
+      status: 1,
+    },
+    {
+      id: "507f1f77bcf86cd799439013",
+      first_name: "Arjun",
+      last_name: "Mehta",
+      email: "arjun.mehta05@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/19.jpg",
       status: 2,
     },
     {
-      id: "69a044dbf6d4952f45ab1545",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
+      id: "507f191e810c19729de860ec",
+      first_name: "Saanvi",
+      last_name: "Reddy",
+      email: "saanvi.reddy99@gmail.com",
       email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      picture: "https://xsgames.co/randomusers/assets/avatars/female/58.jpg",
+      status: 1,
+    },
+    {
+      id: "507f1f77bcf86cd799439014",
+      first_name: "Reyansh",
+      last_name: "Joshi",
+      email: "reyansh.joshi.2001@yahoo.com",
+      email_verified: false,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/8.jpg",
       status: 3,
     },
     {
-      id: "69a044dbf6d4952f45ab154d1",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
+      id: "507f191e810c19729de860ed",
+      first_name: "Kiara",
+      last_name: "Kapoor",
+      email: "kiara.kapoor22@gmail.com",
       email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
-      status: 0,
-    },
-    {
-      id: "69a044dbf6d4952f45ab154d2",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
-      email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      picture: "https://xsgames.co/randomusers/assets/avatars/female/76.jpg",
       status: 1,
     },
     {
-      id: "69a044dbf6d4952f45ab1543",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
+      id: "507f1f77bcf86cd799439015",
+      first_name: "Kabir",
+      last_name: "Khan",
+      email: "kabir.khan.07@gmail.com",
       email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
-      status: 2,
-    },
-    {
-      id: "69a044dbf6d4952f45ab1545",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
-      email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
-      status: 3,
-    },
-    {
-      id: "69a044dbf6d4952f45ab154d1",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
-      email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
-      status: 0,
-    },
-    {
-      id: "69a044dbf6d4952f45ab154d2",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
-      email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/55.jpg",
       status: 1,
     },
     {
-      id: "69a044dbf6d4952f45ab1543",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
+      id: "507f191e810c19729de860ee",
+      first_name: "Myra",
+      last_name: "Desai",
+      email: "myra.desai2003@gmail.com",
+      email_verified: false,
+      picture: "https://xsgames.co/randomusers/assets/avatars/female/41.jpg",
+      status: 0,
+    },
+    {
+      id: "507f1f77bcf86cd799439016",
+      first_name: "Advik",
+      last_name: "Yadav",
+      email: "advik.yadav.23@gmail.com",
       email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/92.jpg",
+      status: 1,
+    },
+    {
+      id: "507f191e810c19729de860ef",
+      first_name: "Isha",
+      last_name: "Thakur",
+      email: "isha.thakur11@outlook.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/female/25.jpg",
       status: 2,
     },
     {
-      id: "69a044dbf6d4952f45ab1545",
-      first_name: "Aarav",
-      last_name: "Sharma",
-      email: "aarav.sharma94@gmail.com",
+      id: "507f1f77bcf86cd799439017",
+      first_name: "Ayaan",
+      last_name: "Malhotra",
+      email: "ayaan.malhotra98@gmail.com",
       email_verified: true,
-      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/36.jpg",
+      status: 1,
+    },
+    {
+      id: "507f191e810c19729de860f0",
+      first_name: "Zara",
+      last_name: "Rao",
+      email: "zara.rao05@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/female/63.jpg",
+      status: 1,
+    },
+    {
+      id: "507f1f77bcf86cd799439018",
+      first_name: "Rudra",
+      last_name: "Tripathi",
+      email: "rudra.tripathi.2000@gmail.com",
+      email_verified: false,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/29.jpg",
       status: 3,
     },
   ];
@@ -243,7 +333,6 @@ const Users = () => {
           <Paper
             sx={{
               "&.MuiPaper-root": {
-                height: "100%",
                 flex: 1,
                 boxShadow: "1px 1px 1px 2px rgba(0,0,0,0.1)",
               },
@@ -254,6 +343,7 @@ const Users = () => {
               columns={columns}
               initialState={{ pagination: { paginationModel } }}
               pageSizeOptions={[5, 10]}
+              disableRowSelectionOnClick
               checkboxSelection
               sx={{ border: 0 }}
             />

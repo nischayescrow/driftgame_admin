@@ -22,7 +22,7 @@ import { EmailLoginDto } from './dto/emailLogin.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('signup/google')
+  @Post('signup/google')
   @HttpCode(HttpStatus.CREATED)
   async signupWithGoogle(@Req() req: Request) {
     const authCode = req.headers.authorization;
@@ -34,7 +34,7 @@ export class AuthController {
     return this.authService.singupWithGoogle(authCode);
   }
 
-  @Get('signup/email')
+  @Post('signup/email')
   @HttpCode(HttpStatus.CREATED)
   async signupWithEmail(@Body() createUserDto: CreateUserDto) {
     return this.authService.singupWithEmail(createUserDto);

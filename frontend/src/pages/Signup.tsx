@@ -1,17 +1,61 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Controller, useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  SignUpSchema,
+  type SignUpSchemaType,
+} from "../features/auth/schemas/auth.schema";
+import { useState } from "react";
+import InputAdornment from "@mui/material/InputAdornment";
+import { IoEye, IoEyeOff } from "react-icons/io5";
+import { useDispatch } from "react-redux";
+import {
+  startLoading,
+  stopLoading,
+} from "../components/common/loader/loader.slice";
+import toast from "react-hot-toast";
+import { singUp } from "../features/auth/services/auth.service";
 
 const SignUp = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const random = Math.ceil(Math.random() * 1000);
+  const [loginPassEye, setLoginPassEye] = useState(true);
   let {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm({});
+  } = useForm<SignUpSchemaType>({
+    resolver: zodResolver(SignUpSchema),
+    defaultValues: {
+      first_name: `admin${random}`,
+      last_name: "escrow",
+      email: `admin${random}.escrow@gmail.com`,
+      password: "Admin@2026",
+    },
+  });
 
-  const handleLogin = (data: any) => {};
+  const handleSignup = async (data: SignUpSchemaType) => {
+    console.log(data);
+
+    dispatch(startLoading());
+    const signupRes = await singUp(data);
+    setTimeout(() => dispatch(stopLoading()), 500);
+
+    console.log("loginRes: ", signupRes);
+
+    if (signupRes && signupRes.status === 201) {
+      toast.success(signupRes.data?.message);
+      navigate("/");
+    }
+  };
+
+  const handleLoginEye = () => {
+    setLoginPassEye(!loginPassEye);
+  };
 
   return (
     <div className="myContainer flex-1 flex justify-end items-center">
@@ -22,7 +66,7 @@ const SignUp = () => {
         </div>
         <form
           className=" p-7 bg-white rounded-sm shadow-md"
-          onSubmit={handleSubmit(handleLogin)}
+          onSubmit={handleSubmit(handleSignup)}
         >
           <div className="mb-10 flex flex-col items-center gap-y-1">
             <p className="text-lg font-semibold text-blue-800">
@@ -49,7 +93,9 @@ const SignUp = () => {
                     value={value}
                     onChange={onChange}
                   />
-                  <p className="min-h-5"></p>
+                  <p className="min-h-5 text-sm text-red-600">
+                    {errors.first_name ? errors.first_name.message : ""}
+                  </p>
                 </>
               )}
             />
@@ -71,7 +117,9 @@ const SignUp = () => {
                     value={value}
                     onChange={onChange}
                   />
-                  <p className="min-h-5"></p>
+                  <p className="min-h-5 text-sm text-red-600">
+                    {errors.last_name ? errors.last_name.message : ""}
+                  </p>
                 </>
               )}
             />
@@ -93,7 +141,9 @@ const SignUp = () => {
                     value={value}
                     onChange={onChange}
                   />
-                  <p className="min-h-5"></p>
+                  <p className="min-h-5 text-sm text-red-600">
+                    {errors.email ? errors.email.message : ""}
+                  </p>
                 </>
               )}
             />
@@ -110,13 +160,35 @@ const SignUp = () => {
                     fullWidth
                     size="small"
                     label="Password"
-                    type="password"
+                    type={loginPassEye ? "text" : "password"}
                     variant="outlined"
                     name={name}
                     value={value}
                     onChange={onChange}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="start">
+                            <button
+                              type="button"
+                              className="block p-2 text-xl text-black cursor-pointer"
+                              onClick={handleLoginEye}
+                            >
+                              {loginPassEye ? <IoEyeOff /> : <IoEye />}
+                            </button>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        paddingRight: 0,
+                      },
+                    }}
                   />
-                  <p className="min-h-5"></p>
+                  <p className="min-h-5 text-sm text-red-600">
+                    {errors.password ? errors.password.message : ""}
+                  </p>
                 </>
               )}
             />
