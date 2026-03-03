@@ -39,15 +39,11 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <div className={`min-w-screen max-w-screen min-h-screen max-h-screen flex`}>
+    <div
+      className={`min-w-screen max-w-screen overflow-hidden min-h-screen max-h-screen flex`}
+    >
       {/* Sidebar */}
-      <div
-        className="border-r border-r-slate-200 flex flex-col"
-        // style={{
-        //   width: openSideBar ? "255px" : "64px",
-        //   transition: "width 0.5s ease-in-out",
-        // }}
-      >
+      <div className="border-r border-r-slate-200 flex flex-col">
         {/* Logo */}
         <div
           className="h-17 border-b border-b-slate-200 flex justify-center items-center overflow-hidden"
@@ -158,9 +154,12 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       </div>
 
       {/* Dashboard main */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 overflow-y-auto flex flex-col relative">
         {/* Navbar */}
-        <div className="h-17 flex justify-between px-4 border-b border-b-slate-200">
+        <div
+          className="sticky top-0 right-0 left-0 z-10 bg-white  min-h-17 max-h-17 flex justify-between px-4 border-b 
+        border-b-slate-200"
+        >
           {/* Search */}
           <div className="flex items-center gap-4">
             <button
@@ -229,8 +228,6 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                 horizontal: "left",
               }}
             >
-              <MenuItem onClick={closeUserMenu}>Profile</MenuItem>
-              <MenuItem onClick={closeUserMenu}>My account</MenuItem>
               <MenuItem onClick={closeUserMenu}>Logout</MenuItem>
             </Menu>
           </div>
@@ -238,7 +235,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
         {children}
 
-        <div className="h-17 flex justify-between items-center px-6 border-t border-t-slate-200">
+        <div className="min-h-17 max-h-17 flex justify-between items-center px-6 border-t border-t-slate-200">
           <p>2026 &copy; DriftKing.</p>
           <p>Developed by Escrow infotech ltd.</p>
         </div>

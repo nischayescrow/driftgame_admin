@@ -2,47 +2,191 @@ import { FiPlus } from "react-icons/fi";
 import { LuFilter } from "react-icons/lu";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
+import Avatar from "@mui/material/Avatar";
+import { IoSearch } from "react-icons/io5";
 
 const Users = () => {
   const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 70 },
-    { field: "firstName", headerName: "First name", width: 130 },
-    { field: "lastName", headerName: "Last name", width: 130 },
+    { field: "id", headerName: "ID", width: 210 },
     {
-      field: "age",
-      headerName: "Age",
-      type: "number",
-      width: 90,
+      field: "picture",
+      headerName: "Picture",
+      type: "string",
+      width: 70,
+      align: "center",
+      renderCell: (params) => (
+        <div className="p-4 w-full h-full flex justify-center items-center">
+          <Avatar
+            alt="User picture"
+            src={params.value}
+            style={{
+              width: 32,
+              height: 32,
+            }}
+          />
+        </div>
+      ),
+    },
+
+    { field: "first_name", headerName: "First name", width: 130 },
+    { field: "last_name", headerName: "Last name", width: 130 },
+    {
+      field: "email",
+      headerName: "Email",
+      type: "string",
+      width: 200,
     },
     {
-      field: "fullName",
-      headerName: "Full name",
-      description: "This column has a value getter and is not sortable.",
-      sortable: false,
-      width: 160,
-      valueGetter: (value, row) =>
-        `${row.firstName || ""} ${row.lastName || ""}`,
+      field: "email_verified",
+      headerName: "Email verified",
+      type: "boolean",
+      width: 130,
+    },
+    {
+      field: "status",
+      headerName: "Account status",
+      type: "number",
+      width: 130,
+      align: "center",
+      renderCell: ({ value }) => (
+        <>
+          {value === 0 && (
+            <p className="text-slate-500 font-semibold">Not Active</p>
+          )}
+
+          {value === 1 && (
+            <p className="text-green-600 font-semibold">Active</p>
+          )}
+
+          {value === 2 && <p className="text-red-600 font-semibold">Blocked</p>}
+
+          {value === 3 && (
+            <p className="text-orange-600 font-semibold">Deleted</p>
+          )}
+        </>
+      ),
     },
   ];
 
   const rows = [
-    { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
-    { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
-    { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
-    { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
-    { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: null },
-    { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
-    { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 },
-    { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
-    { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 },
+    {
+      id: "69a044dbf6d4952f45ab154d1",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 0,
+    },
+    {
+      id: "69a044dbf6d4952f45ab154d2",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 1,
+    },
+    {
+      id: "69a044dbf6d4952f45ab1543",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 2,
+    },
+    {
+      id: "69a044dbf6d4952f45ab1545",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 3,
+    },
+    {
+      id: "69a044dbf6d4952f45ab154d1",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 0,
+    },
+    {
+      id: "69a044dbf6d4952f45ab154d2",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 1,
+    },
+    {
+      id: "69a044dbf6d4952f45ab1543",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 2,
+    },
+    {
+      id: "69a044dbf6d4952f45ab1545",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 3,
+    },
+    {
+      id: "69a044dbf6d4952f45ab154d1",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 0,
+    },
+    {
+      id: "69a044dbf6d4952f45ab154d2",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 1,
+    },
+    {
+      id: "69a044dbf6d4952f45ab1543",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 2,
+    },
+    {
+      id: "69a044dbf6d4952f45ab1545",
+      first_name: "Aarav",
+      last_name: "Sharma",
+      email: "aarav.sharma94@gmail.com",
+      email_verified: true,
+      picture: "https://xsgames.co/randomusers/assets/avatars/male/44.jpg",
+      status: 3,
+    },
   ];
+
+  const handleUserSearch = () => {};
 
   const paginationModel = { page: 0, pageSize: 5 };
   return (
-    <div className="flex-1 flex flex-col p-6">
+    <div className="flex-1 flex flex-col">
       {/* header */}
       <div
-        className="p-4 flex items-center justify-between mb-5 rounded-sm"
+        className="m-6 p-4 flex items-center justify-between mb-5 rounded-sm"
         style={{
           boxShadow: "1px 1px 1px 2px rgba(0,0,0,0.1)",
         }}
@@ -77,25 +221,44 @@ const Users = () => {
       </div>
 
       {/* User Table */}
-      <div className="flex-1">
-        <Paper
-          sx={{
-            height: "100%",
-            width: "100%",
-            "&.MuiPaper-root": {
-              boxShadow: "1px 1px 1px 2px rgba(0,0,0,0.1)",
-            },
-          }}
-        >
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[5, 10]}
-            checkboxSelection
-            sx={{ border: 0 }}
+      <div className="max-w-[calc(100vw-255px)] flex-1 flex flex-col px-6 pb-6">
+        {/* Search */}
+        <div className="relative m-4 ms-0">
+          <input
+            type="text"
+            onChange={handleUserSearch}
+            className=" border border-slate-200 rounded-sm p-1.5 px-10 w-sm placeholder:font-semibold placeholder:text-sm"
+            placeholder="Search for user..."
           />
-        </Paper>
+
+          <button
+            type="button"
+            className="h-full px-2.5 rounded-sm absolute left-0 top-1/2 -translate-y-1/2 cursor-pointer hover:scale-105"
+          >
+            <IoSearch className="text-lg" />
+          </button>
+        </div>
+
+        <div className="flex-1">
+          <Paper
+            sx={{
+              "&.MuiPaper-root": {
+                height: "100%",
+                flex: 1,
+                boxShadow: "1px 1px 1px 2px rgba(0,0,0,0.1)",
+              },
+            }}
+          >
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              initialState={{ pagination: { paginationModel } }}
+              pageSizeOptions={[5, 10]}
+              checkboxSelection
+              sx={{ border: 0 }}
+            />
+          </Paper>
+        </div>
       </div>
     </div>
   );
