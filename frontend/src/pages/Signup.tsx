@@ -2,6 +2,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Controller, useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
+import { NavLink } from "react-router-dom";
 
 const SignUp = () => {
   let {
@@ -32,7 +33,7 @@ const SignUp = () => {
             </p>
           </div>
 
-          {/* Email */}
+          {/* Firstname */}
           <div className="mb-3">
             <Controller
               name="email"
@@ -41,7 +42,8 @@ const SignUp = () => {
                 <>
                   <TextField
                     fullWidth
-                    label="Email"
+                    size="small"
+                    label="Firstname"
                     variant="outlined"
                     name={name}
                     value={value}
@@ -53,7 +55,7 @@ const SignUp = () => {
             />
           </div>
 
-          {/* Username */}
+          {/* Lastname */}
           <div className="mb-3">
             <Controller
               name="email"
@@ -62,7 +64,30 @@ const SignUp = () => {
                 <>
                   <TextField
                     fullWidth
-                    label="Username"
+                    size="small"
+                    label="Lastname"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                  />
+                  <p className="min-h-5"></p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Email */}
+          <div className="mb-3">
+            <Controller
+              name="email"
+              control={control}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Email"
                     variant="outlined"
                     name={name}
                     value={value}
@@ -83,6 +108,7 @@ const SignUp = () => {
                 <>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Password"
                     type="password"
                     variant="outlined"
@@ -96,11 +122,25 @@ const SignUp = () => {
             />
           </div>
 
-          <Button fullWidth type="submit" variant="contained">
-            Sign Up
-          </Button>
+          <div className="mb-7">
+            <Button fullWidth type="submit" variant="contained">
+              Sign Up
+            </Button>
+          </div>
 
-          <div className="my-5 flex items-center gap-x-3">
+          <p className="flex justify-center items-center gap-1">
+            <span className="text-sm font-semibold">
+              Already have an account ?
+            </span>
+            <NavLink
+              to="/"
+              className="text-sm font-semibold underline text-blue-700"
+            >
+              Signin
+            </NavLink>
+          </p>
+
+          {/* <div className="my-5 flex items-center gap-x-3">
             <p className="w-1/2 h-px bg-slate-300"></p>
             <p className="text-nowrap">Create account with</p>
             <p className="w-1/2 h-px bg-slate-300"></p>
@@ -113,7 +153,7 @@ const SignUp = () => {
             >
               <FcGoogle className="w-8 h-8" />
             </button>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>

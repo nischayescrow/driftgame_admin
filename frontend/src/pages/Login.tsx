@@ -2,6 +2,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Controller, useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
+import { NavLink } from "react-router-dom";
 
 const Login = () => {
   let {
@@ -39,6 +40,7 @@ const Login = () => {
                 <>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Email"
                     variant="outlined"
                     name={name}
@@ -60,6 +62,7 @@ const Login = () => {
                 <>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Password"
                     type="password"
                     variant="outlined"
@@ -73,24 +76,38 @@ const Login = () => {
             />
           </div>
 
-          <Button fullWidth type="submit" variant="contained">
-            Sign in
-          </Button>
+          <div className="mb-7">
+            <Button fullWidth type="submit" variant="contained">
+              Sign in
+            </Button>
+          </div>
 
-          <div className="my-5 flex items-center gap-x-3">
+          <p className="flex justify-center items-center gap-1">
+            <span className="text-sm font-semibold">
+              Don't have an account ?
+            </span>
+            <NavLink
+              to="/signup"
+              className="text-sm font-semibold underline text-blue-700"
+            >
+              Signup
+            </NavLink>
+          </p>
+
+          {/* <div className="my-5 flex items-center gap-x-3">
             <p className="w-1/2 h-px bg-slate-300"></p>
             <p className="text-nowrap">Sign in with</p>
             <p className="w-1/2 h-px bg-slate-300"></p>
-          </div>
+          </div> */}
 
-          <div className="flex justify-center items-center">
+          {/* <div className="flex justify-center items-center">
             <button
               type="button"
               className="p-1 border border-slate-300 rounded-sm cursor-pointer hover:bg-slate-100"
             >
               <FcGoogle className="w-8 h-8" />
             </button>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>
