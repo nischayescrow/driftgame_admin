@@ -8,7 +8,7 @@ import { UserStatus } from './schemas/user.schema';
 import { Types } from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { UserProj } from './types/user.type';
+import { FindAllUsersProj, UserProj } from './types/user.type';
 import { UserRepository } from './repositories/user.repository';
 import { FriendReqRepository } from './repositories/friendRequest.repository';
 
@@ -32,6 +32,16 @@ export class UserService {
     _id: 1,
     createdAt: 1,
     updatedAt: 1,
+  };
+
+  private findAllUserProj: FindAllUsersProj = {
+    first_name: 1,
+    last_name: 1,
+    email: 1,
+    email_verified: 1,
+    picture: 1,
+    status: 1,
+    _id: 1,
   };
 
   async findById(id: string, all: boolean = false, pass: boolean = false) {
@@ -93,9 +103,38 @@ export class UserService {
         limit,
         page,
         all,
-        pass
-          ? { ...this.userDataProjection, password: 1 }
-          : this.userDataProjection,
+        pass ? { ...this.findAllUserProj, password: 1 } : this.findAllUserProj,
+      );
+
+      console.log(findUsers);
+
+      return {
+        data: findUsers.users,
+        total: findUsers.total,
+        page,
+        limit,
+      };
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async findAll(limit: number = 10, page: number = 1, pass: boolean = false) {
+    let findAllUserProj: FindAllUsersProj = {
+      first_name: 1,
+      last_name: 1,
+      email: 1,
+      email_verified: 1,
+      picture: 1,
+      status: 1,
+      _id: 1,
+    };
+    try {
+      const findUsers = await this.userRepo.findAll(
+        limit,
+        page,
+        pass ? { ...this.findAllUserProj, password: 1 } : this.findAllUserProj,
       );
 
       console.log(findUsers);

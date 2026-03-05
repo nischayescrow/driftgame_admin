@@ -38,7 +38,21 @@ export class UserController {
     @Query('all') all: boolean,
     @Query('pass') pass: boolean,
   ) {
+    if (!text || text.length < 1) {
+      return this.userService.findAll(limit, page, pass);
+    }
+
     return this.userService.search(text, limit, page, all, pass);
+  }
+
+  @Get('get/all')
+  @HttpCode(HttpStatus.OK)
+  findAll(
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+    @Query('pass') pass: boolean,
+  ) {
+    return this.userService.findAll(limit, page, pass);
   }
 
   @Post('create')

@@ -13,13 +13,13 @@ export default api;
 
 let isRefreshing: boolean = false;
 let failedQueue: {
-  resolve: () => void;
+  resolve: (value: any) => void;
   reject: (error: any) => void;
 }[] = [];
 
-const processQueue = (error: any) => {
+const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((req) => {
-    error ? req.reject(error) : req.resolve();
+    error ? req.reject(error) : req.resolve(token);
   });
 
   failedQueue = [];
@@ -62,10 +62,16 @@ api.interceptors.response.use(
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({
-          resolve: () => api(originalRequest),
+          resolve,
           reject,
         });
-      });
+      })
+        .then((token) => {
+          originalRequest.headers = originalRequest.headers ?? {};
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        })
+        .catch((err) => Promise.reject(err));
     }
 
     isRefreshing = true;
@@ -99,6 +105,8 @@ api.interceptors.response.use(
 
       processQueue(null);
 
+      originalRequest.headers = originalRequest.headers ?? {};
+      originalRequest.headers.Authorization = `Bearer ${refresh.data.access_token}`;
       return api(originalRequest);
     } catch (error) {
       console.log(error);

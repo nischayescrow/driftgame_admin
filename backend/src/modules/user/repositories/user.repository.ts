@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isObjectIdOrHexString, Model, Types } from 'mongoose';
 import { User, UserDocument, UserStatus } from '../schemas/user.schema';
-import { UserProj } from '../types/user.type';
+import { FindAllUsersProj, UserProj } from '../types/user.type';
 
 @Injectable()
 export class UserRepository {
@@ -60,9 +60,9 @@ export class UserRepository {
   async search(
     text: string,
     limit: number = 10,
-    page: number = 1,
+    page: number = 0,
     all: boolean = false,
-    userProj: UserProj,
+    userProj: FindAllUsersProj,
   ): Promise<{ users: UserDocument[]; total: number }> {
     const findQuery = all
       ? {
@@ -85,7 +85,7 @@ export class UserRepository {
           ],
         };
 
-    const skip = (page - 1) * limit;
+    const skip = page * limit;
     const totalUsers = await this.userModel.countDocuments(findQuery);
 
     return {
@@ -97,8 +97,18 @@ export class UserRepository {
     };
   }
 
-  async findAll(): Promise<UserDocument[]> {
-    return await this.userModel.find();
+  async findAll(
+    limit: number = 10,
+    page: number = 0,
+    userProj: FindAllUsersProj,
+  ): Promise<{ users: UserDocument[]; total: number }> {
+    const skip = page * limit;
+    const totalUsers = await this.userModel.countDocuments({});
+
+    return {
+      users: await this.userModel.find({}, userProj).limit(limit).skip(skip),
+      total: totalUsers,
+    };
   }
 
   async update(

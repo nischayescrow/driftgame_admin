@@ -21,8 +21,10 @@ function App() {
 
   const verifyMe = async () => {
     if (!routeChange) dispatch(startLoading());
+    // dispatch(startLoading());
     const verifyMeRes = await verifyUser();
     setTimeout(() => {
+      console.log("init-verify me:");
       setRouteChange(false);
       dispatch(stopLoading());
     }, 300);
@@ -43,10 +45,17 @@ function App() {
     console.log("Current path: ", location.pathname);
     verifyMe();
   }, [location.pathname]);
+
+  useEffect(() => {
+    console.log("Current path: init-verify me:", location.pathname);
+    verifyMe();
+  }, []);
   return (
     <div className="min-w-screen max-w-screen overflow-hidden min-h-screen max-h-screen flex flex-col">
       {/* Loader */}
       {(isLoading || routeChange) && <Loader />}
+
+      {/* {isLoading && <Loader />} */}
       {/* Toaster */}
       <Toaster position="top-center" />
       <Outlet />
