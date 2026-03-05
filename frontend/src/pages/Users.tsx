@@ -4,25 +4,24 @@ import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
 import Avatar from "@mui/material/Avatar";
 import { IoSearch } from "react-icons/io5";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
 import { useEffect, useRef, useState } from "react";
-import { HiDotsVertical } from "react-icons/hi";
-import { addUser, searchUsers } from "../features/user/services/user.service";
+import {
+  addUser,
+  deleteUser,
+  editUser,
+  fetchUserById,
+  searchUsers,
+} from "../features/user/services/user.service";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../store/store";
 import BlockLoader from "../components/common/loader/BlockLoader";
 import type { UserDoc } from "../features/user/user.type";
-import Dialog from "@mui/material/Dialog";
-import { IoMdClose } from "react-icons/io";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Controller, useForm } from "react-hook-form";
 
 import {
-  LoginSchema,
   SignUpSchema,
-  type LoginSchemaType,
   type SignUpSchemaType,
 } from "../features/auth/schemas/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,14 +30,25 @@ import { IoEye, IoEyeOff } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import toast from "react-hot-toast";
 import MyDialog from "../components/ui/MyDialog";
+import ActionButtons from "../components/ui/ActionButtons";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import {
+  EditUserSchema,
+  type EditUserSchemaType,
+} from "../features/user/schemas/user.schema";
+import Switch from "@mui/material/Switch";
 
 const Users = () => {
   const dispatch = useDispatch<AppDispatch>();
   let debounceTimerRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [fetchingUser, setFetchingUser] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [actionAnc, setActionAnc] = useState<null | HTMLElement>(null);
+
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -46,16 +56,16 @@ const Users = () => {
   });
   const [users, setUsers] = useState<UserDoc[]>([]);
   const [addDialog, setAddDialog] = useState(false);
-  const [editDialog, setEditDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState<{
+    status: boolean;
+    actionType: "view" | "edit" | "delete" | null;
+    user_id: string | null;
+  }>({
+    status: false,
+    actionType: null,
+    user_id: null,
+  });
   const [passEye, setPassEye] = useState(true);
-
-  const openActions = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setActionAnc(event.currentTarget);
-  };
-
-  const closeActions = () => {
-    setActionAnc(null);
-  };
 
   const columns: GridColDef[] = [
     { field: "id", headerName: "Id", width: 210 },
@@ -118,67 +128,15 @@ const Users = () => {
       ),
     },
     {
-      field: "",
+      field: "actions",
       headerName: "Actions",
-      type: "number",
       width: 70,
       align: "center",
       sortable: false,
       filterable: false,
-      renderCell: (params) => (
-        <div className="w-full h-full flex justify-center items-center">
-          <button
-            type="button"
-            aria-controls={Boolean(actionAnc) ? "basic-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={Boolean(actionAnc) ? "true" : undefined}
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-              event.preventDefault();
-              openActions(event);
-            }}
-            className="w-full h-full flex justify-center items-center cursor-pointer text-xl p-2"
-          >
-            <HiDotsVertical />
-          </button>
-          <Menu
-            id="basic-menu"
-            anchorEl={actionAnc}
-            open={Boolean(actionAnc)}
-            onClose={closeActions}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "left",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "left",
-            }}
-            slotProps={{
-              list: {
-                "aria-labelledby": "basic-button",
-              },
-            }}
-          >
-            <MenuItem
-              onClick={() => {
-                closeActions();
-                openEditDialog(params.row.id);
-              }}
-            >
-              View
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                closeActions();
-                openEditDialog(params.row.id);
-              }}
-            >
-              Edit
-            </MenuItem>
-            <MenuItem onClick={closeActions}>Delete</MenuItem>
-          </Menu>
-        </div>
-      ),
+      renderCell: (params) => {
+        return <ActionButtons rowId={params.row.id} method={setEditDialog} />;
+      },
     },
   ];
 
@@ -278,53 +236,109 @@ const Users = () => {
   };
 
   // <==================== Edit user ====================>
-
   let {
     control: editUserControl,
     handleSubmit: editUserSubmit,
     reset: editUserReset,
+    setValue: editUserSetVal,
     formState: { errors: editUserError },
-  } = useForm({
-    // resolver: zodResolver(),
+  } = useForm<EditUserSchemaType>({
+    resolver: zodResolver(EditUserSchema),
     defaultValues: {
-      first_name: `admin${random}`,
-      last_name: "escrow",
-      email: `admin${random}.escrow@gmail.com`,
-      password: "Admin@2026",
+      first_name: "",
+      last_name: "",
+      email: "",
+      password: "",
+      status: 0,
     },
   });
 
-  const openEditDialog = (user_id: string) => {
+  const openEditDialog = async (user_id: string) => {
     console.log("user_id: ", user_id);
-    setEditDialog(true);
+    setFetchingUser(true);
+    if (user_id) {
+      const fetchUser = await fetchUserById(user_id);
+
+      console.log("fetchUser: ", fetchUser);
+      if (fetchUser && fetchUser.data) {
+        editUserSetVal("first_name", fetchUser.data.first_name);
+        editUserSetVal("last_name", fetchUser.data.last_name);
+        editUserSetVal("email", fetchUser.data.email);
+        editUserSetVal("password", fetchUser.data.password);
+        editUserSetVal("email_verified", fetchUser.data.email_verified);
+        editUserSetVal("status", fetchUser.data.status);
+      }
+    }
+    setFetchingUser(false);
   };
 
   const closeEditDialog = () => {
     if (!adding) {
-      setEditDialog(false);
+      setEditDialog({
+        status: false,
+        actionType: null,
+        user_id: null,
+      });
       editUserReset();
     }
   };
 
   const handleSaveUser = async (data: any) => {
+    if (!editDialog.user_id) {
+      toast.error("User id do not found!");
+      throw new Error("User id do not found!");
+    }
+
     console.log(data);
-    // setAdding(true);
-    // const addUserRes = await addUser(data);
-    // setTimeout(() => {
-    //   setAdding(false);
+    setAdding(true);
+    const editUserRes = await editUser(editDialog.user_id, data);
+    setAdding(false);
 
-    //   console.log(addUserRes);
+    console.log(editUserRes);
 
-    //   if (addUserRes && addUserRes.status === 201) {
-    //     toast.success(addUserRes.data.message);
-    //     closeAddDialog();
-    //   }
-    // }, 300);
+    if (editUserRes && editUserRes.status === 200) {
+      toast.success(editUserRes.data.message);
+      handleUserSearch(searchText);
+      closeEditDialog();
+    }
   };
 
   // <==================== Delete user ====================>
+  const handleDeleteUser = async () => {
+    if (!editDialog.user_id) {
+      toast.error("User id do not found!");
+      throw new Error("User id do not found!");
+    }
 
-  const handleDeleteUser = () => {};
+    setAdding(true);
+    const delUserRes = await deleteUser(editDialog.user_id);
+    setAdding(false);
+
+    console.log(delUserRes);
+
+    if (delUserRes && delUserRes.status === 200) {
+      toast.success(delUserRes.data.message);
+      handleUserSearch(searchText);
+      closeEditDialog();
+    }
+  };
+
+  useEffect(() => {
+    if (editDialog && editDialog.status && editDialog.user_id) {
+      switch (editDialog.actionType) {
+        case "view": {
+          break;
+        }
+        case "edit": {
+          openEditDialog(editDialog.user_id);
+          break;
+        }
+        case "delete": {
+          break;
+        }
+      }
+    }
+  }, [editDialog]);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -556,7 +570,7 @@ const Users = () => {
           <div className="mb-7 flex gap-7">
             <Button
               fullWidth
-              type="submit"
+              type="button"
               variant="contained"
               color="error"
               onClick={closeAddDialog}
@@ -592,161 +606,275 @@ const Users = () => {
       {/* Edit User dialog */}
       <MyDialog
         onClose={closeEditDialog}
-        open={editDialog}
+        open={editDialog.status && editDialog.actionType === "edit"}
         headerText="Edit User"
       >
-        <form
-          className="w-lg p-7 bg-white rounded-sm shadow-md"
-          onSubmit={editUserSubmit(handleSaveUser)}
-        >
-          {/* First name */}
-          <div className="mb-3">
-            <Controller
-              name="first_name"
-              control={editUserControl}
-              render={({ field: { onChange, value, name } }) => (
-                <>
-                  <TextField
-                    type="text"
-                    fullWidth
-                    size="small"
-                    label="First name"
-                    variant="outlined"
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    disabled={adding}
-                  />
-                  <p className="min-h-5 text-sm text-red-600">
-                    {editUserError.first_name
-                      ? editUserError.first_name.message
-                      : ""}
-                  </p>
-                </>
-              )}
-            />
-          </div>
+        <div className="relative">
+          {fetchingUser && <BlockLoader />}
 
-          {/* Last name */}
-          <div className="mb-3">
-            <Controller
-              name="last_name"
-              control={editUserControl}
-              render={({ field: { onChange, value, name } }) => (
-                <>
-                  <TextField
-                    type="text"
-                    fullWidth
-                    size="small"
-                    label="Last name"
-                    variant="outlined"
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    disabled={adding}
-                  />
-                  <p className="min-h-5 text-sm text-red-600">
-                    {editUserError.last_name
-                      ? editUserError.last_name.message
-                      : ""}
-                  </p>
-                </>
-              )}
-            />
-          </div>
+          <form
+            className="w-lg p-7 bg-white rounded-sm shadow-md"
+            onSubmit={editUserSubmit(handleSaveUser)}
+          >
+            {/* First name */}
+            <div className="mb-3">
+              <Controller
+                name="first_name"
+                control={editUserControl}
+                render={({ field: { onChange, value, name } }) => (
+                  <>
+                    <TextField
+                      type="text"
+                      fullWidth
+                      size="small"
+                      label="First name"
+                      variant="outlined"
+                      name={name}
+                      value={value}
+                      onChange={onChange}
+                      disabled={adding}
+                    />
+                    <p className="min-h-5 text-sm text-red-600">
+                      {editUserError.first_name
+                        ? editUserError.first_name.message
+                        : ""}
+                    </p>
+                  </>
+                )}
+              />
+            </div>
 
-          {/* Email */}
-          <div className="mb-3">
-            <Controller
-              name="email"
-              control={editUserControl}
-              render={({ field: { onChange, value, name } }) => (
-                <>
-                  <TextField
-                    type="text"
-                    fullWidth
-                    size="small"
-                    label="Email"
-                    variant="outlined"
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    disabled={adding}
-                  />
-                  <p className="min-h-5 text-sm text-red-600">
-                    {editUserError.email ? editUserError.email.message : ""}
-                  </p>
-                </>
-              )}
-            />
-          </div>
+            {/* Last name */}
+            <div className="mb-3">
+              <Controller
+                name="last_name"
+                control={editUserControl}
+                render={({ field: { onChange, value, name } }) => (
+                  <>
+                    <TextField
+                      type="text"
+                      fullWidth
+                      size="small"
+                      label="Last name"
+                      variant="outlined"
+                      name={name}
+                      value={value}
+                      onChange={onChange}
+                      disabled={adding}
+                    />
+                    <p className="min-h-5 text-sm text-red-600">
+                      {editUserError.last_name
+                        ? editUserError.last_name.message
+                        : ""}
+                    </p>
+                  </>
+                )}
+              />
+            </div>
 
-          {/* Password */}
-          <div className="mb-5">
-            <Controller
-              name="password"
-              control={editUserControl}
-              render={({ field: { onChange, value, name } }) => (
-                <>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label="Password"
-                    type={passEye ? "text" : "password"}
-                    variant="outlined"
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    disabled={adding}
-                    autoComplete="new-password"
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="start">
-                            <button
-                              type="button"
-                              className="block p-2 text-xl text-black cursor-pointer disabled:text-[#e0e0e0]"
-                              onClick={handlePassEye}
-                              disabled={adding}
-                            >
-                              {passEye ? <IoEyeOff /> : <IoEye />}
-                            </button>
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        paddingRight: 0,
-                      },
-                    }}
-                  />
-                  <p className="min-h-5 text-sm text-red-600">
-                    {editUserError.password
-                      ? editUserError.password.message
-                      : ""}
-                  </p>
-                </>
-              )}
-            />
-          </div>
+            {/* Email */}
+            <div className="mb-3">
+              <Controller
+                name="email"
+                control={editUserControl}
+                render={({ field: { onChange, value, name } }) => (
+                  <>
+                    <TextField
+                      type="text"
+                      fullWidth
+                      size="small"
+                      label="Email"
+                      variant="outlined"
+                      name={name}
+                      value={value}
+                      onChange={onChange}
+                      disabled={adding}
+                    />
+                    <p className="min-h-5 text-sm text-red-600">
+                      {editUserError.email ? editUserError.email.message : ""}
+                    </p>
+                  </>
+                )}
+              />
+            </div>
 
-          <div className="mb-7 flex gap-7">
+            {/* Password */}
+            <div className="mb-5">
+              <Controller
+                name="password"
+                control={editUserControl}
+                render={({ field: { onChange, value, name } }) => (
+                  <>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Password"
+                      type={passEye ? "text" : "password"}
+                      variant="outlined"
+                      name={name}
+                      value={value}
+                      onChange={onChange}
+                      disabled={adding}
+                      autoComplete="new-password"
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="start">
+                              <button
+                                type="button"
+                                className="block p-2 text-xl text-black cursor-pointer disabled:text-[#e0e0e0]"
+                                onClick={handlePassEye}
+                                disabled={adding}
+                              >
+                                {passEye ? <IoEyeOff /> : <IoEye />}
+                              </button>
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          paddingRight: 0,
+                        },
+                      }}
+                    />
+                    <p className="min-h-5 text-sm text-red-600">
+                      {editUserError.password
+                        ? editUserError.password.message
+                        : ""}
+                    </p>
+                  </>
+                )}
+              />
+            </div>
+
+            {/* Email Verified */}
+            <div className="mb-3">
+              <Controller
+                name="email_verified"
+                control={editUserControl}
+                render={({ field: { onChange, value, name } }) => (
+                  <>
+                    <Switch
+                      checked={value ? true : false}
+                      name={name}
+                      onChange={onChange}
+                      slotProps={{ input: { "aria-label": "controlled" } }}
+                    />
+                    <p className="min-h-5 text-sm text-red-600">
+                      {editUserError.email ? editUserError.email.message : ""}
+                    </p>
+                  </>
+                )}
+              />
+            </div>
+
+            {/* Status */}
+            <div className="mb-3">
+              <Controller
+                name="status"
+                control={editUserControl}
+                render={({ field: { onChange, value, name } }) => (
+                  <FormControl fullWidth>
+                    <InputLabel id="user-status-select-label">
+                      Account Status
+                    </InputLabel>
+                    <Select
+                      name={name}
+                      labelId="user-status-select-label"
+                      id="user-status-select"
+                      value={value}
+                      label="Account Status"
+                      onChange={onChange}
+                    >
+                      <MenuItem value={0}>
+                        <p className="text-slate-500 font-semibold">
+                          Not Active
+                        </p>
+                      </MenuItem>
+                      <MenuItem value={1}>
+                        <p className="text-green-600 font-semibold">Active</p>
+                      </MenuItem>
+                      <MenuItem value={2}>
+                        <p className="text-red-600 font-semibold">Blocked</p>
+                      </MenuItem>
+                      <MenuItem value={3}>
+                        <p className="text-orange-600 font-semibold">Deleted</p>
+                      </MenuItem>
+                    </Select>
+                    <p className="min-h-5 text-sm text-red-600">
+                      {editUserError.email ? editUserError.email.message : ""}
+                    </p>
+                  </FormControl>
+                )}
+              />
+            </div>
+
+            {/* Action buttons */}
+            <div className="mb-7 flex gap-7">
+              <Button
+                fullWidth
+                type="button"
+                variant="contained"
+                color="error"
+                onClick={closeEditDialog}
+                disabled={adding}
+              >
+                Cancel
+              </Button>
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                disabled={adding}
+              >
+                <div className="flex items-center gap-2">
+                  {adding && (
+                    <CircularProgress
+                      size="20px"
+                      sx={{
+                        "&.MuiCircularProgress-root": {
+                          animationDuration: "500ms",
+                          color: "white",
+                        },
+                      }}
+                    />
+                  )}
+                  {adding ? "Saving..." : "Save User"}
+                </div>
+              </Button>
+            </div>
+          </form>
+        </div>
+      </MyDialog>
+
+      {/* Delete confirmation */}
+      <MyDialog
+        onClose={closeEditDialog}
+        open={editDialog.status && editDialog.actionType === "delete"}
+        headerText="Delete User"
+      >
+        <div className="w-lg p-7">
+          <p className="mb-7 text-lg font-semibold">Are you sure?</p>
+
+          {/* Action buttons */}
+          <div className=" flex gap-7">
             <Button
               fullWidth
-              type="submit"
+              type="button"
               variant="contained"
               color="error"
-              onClick={closeAddDialog}
+              onClick={closeEditDialog}
               disabled={adding}
             >
               Cancel
             </Button>
             <Button
               fullWidth
-              type="submit"
+              type="button"
               variant="contained"
               disabled={adding}
+              onClick={handleDeleteUser}
             >
               <div className="flex items-center gap-2">
                 {adding && (
@@ -760,11 +888,11 @@ const Users = () => {
                     }}
                   />
                 )}
-                {adding ? "Adding..." : "Add User"}
+                {adding ? "Deleting..." : "Delete User"}
               </div>
             </Button>
           </div>
-        </form>
+        </div>
       </MyDialog>
     </div>
   );
