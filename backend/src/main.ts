@@ -6,6 +6,7 @@ setServers(['1.1.1.1', '1.0.0.1', '8.8.8.8', '8.8.4.4']);
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,9 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Auth'],
     credentials: true,
   });
+
+  // Cookie parser
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -30,7 +30,8 @@ const userSlice = createSlice({
       state.data = action.payload.data;
     },
     removeUser: (state) => {
-      state = initialState;
+      state.access_token = initialState.access_token;
+      state.data = initialState.data;
     },
   },
 });

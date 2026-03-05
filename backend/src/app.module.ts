@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LobbyModule } from './modules/lobby/lobby.module';
@@ -9,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { AuthMiddleware } from './middlewares/auth/auth.middleware';
 
 @Module({
   imports: [
@@ -33,4 +39,15 @@ import { RedisModule } from './modules/redis/redis.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .exclude(
+        { path: 'admin/auth/signup/{*splat}', method: RequestMethod.ALL },
+        { path: 'admin/auth/login/{*splat}', method: RequestMethod.ALL },
+        { path: 'admin/auth/refresh', method: RequestMethod.ALL },
+      )
+      .forRoutes('*');
+  }
+}

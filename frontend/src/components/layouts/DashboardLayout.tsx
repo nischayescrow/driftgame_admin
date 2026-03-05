@@ -14,9 +14,15 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../store/store";
+import { removeUser } from "../../features/user/user.slice";
+import { logout } from "../../features/auth/services/auth.service";
+import { startLoading, stopLoading } from "../common/loader/loader.slice";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const [openSideBar, setOpenSideBar] = useState(true);
   const [userMenu, setUserMenu] = useState<null | HTMLElement>(null);
 
@@ -32,9 +38,17 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   };
 
   const handleDefaultSearch = () => {};
-  const handleLogout = () => {
-    closeUserMenu();
-    navigate("/", { replace: true });
+  const handleLogout = async () => {
+    dispatch(startLoading());
+    const logoutRes = await logout();
+
+    console.log("logoutRes: ", logoutRes);
+
+    if (logoutRes && logoutRes.status === 200) {
+      closeUserMenu();
+      dispatch(removeUser());
+      navigate("/", { replace: true });
+    }
   };
 
   return (

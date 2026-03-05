@@ -48,6 +48,7 @@ export class AuthMiddleware implements NestMiddleware {
       console.log('Authenticated:userData: ', userData);
 
       req.user = userData.user;
+      req.session = userData.session;
 
       next();
     } catch (error) {

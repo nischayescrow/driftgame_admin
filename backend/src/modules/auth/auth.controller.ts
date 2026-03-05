@@ -22,58 +22,36 @@ import { EmailLoginDto } from './dto/emailLogin.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signup/google')
-  @HttpCode(HttpStatus.CREATED)
-  async signupWithGoogle(@Req() req: Request) {
-    const authCode = req.headers.authorization;
-
-    if (!authCode) {
-      throw new UnauthorizedException('Unauthorized request!');
-    }
-
-    return this.authService.singupWithGoogle(authCode);
-  }
-
-  @Post('signup/email')
-  @HttpCode(HttpStatus.CREATED)
-  async signupWithEmail(@Body() createUserDto: CreateUserDto) {
-    return this.authService.singupWithEmail(createUserDto);
-  }
-
-  @Get('login/google')
+  @Get('verify/me')
   @HttpCode(HttpStatus.OK)
-  async loginWithGoogle(@Req() req: Request, @Res() res: Response) {
-    const authCode = req.headers.authorization;
-
-    console.log('authCode: ', authCode);
-
-    if (!authCode) {
-      throw new UnauthorizedException('Unauthorized request!');
+  async verifyMe(@Req() req: Request) {
+    if (req.user) {
+      return { ok: true };
+    } else {
+      throw new UnauthorizedException();
     }
+  }
 
-    const loginRes = await this.authService.loginWithGoogle(authCode);
+  @Get('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@Req() req: Request, @Res() res: Response) {
+    console.log('req.cookies: ', req.cookies);
+    const refresh_token = req.cookies['refresh_token'];
+    console.log('refresh_token', refresh_token);
 
-    if (!loginRes || !loginRes.access_token || !loginRes.refresh_token) {
-      throw new InternalServerErrorException('Failed to login!');
+    const refreshRes = await this.authService.refreshToken(refresh_token);
+
+    console.log('refreshRes: ', refreshRes);
+
+    if (!refreshRes || !refreshRes.access_token || !refreshRes.refresh_token) {
+      throw new InternalServerErrorException('Failed to refresh!');
     }
-
-    const access_token_expires = new Date(
-      Date.now() + parseInt(process.env.ACCESS_EXPIRES_AT!),
-    );
-
-    res.cookie('access_token', loginRes.access_token, {
-      httpOnly: true,
-      secure: process.env.APP_ENV! === 'production',
-      sameSite: process.env.APP_ENV! === 'production' ? 'none' : 'strict',
-      path: '/',
-      expires: access_token_expires,
-    });
 
     const refresh_token_expires = new Date(
-      Date.now() + parseInt(process.env.ACCESS_EXPIRES_AT!),
+      Date.now() + parseInt(process.env.REFRESH_EXPIRES_AT!),
     );
 
-    res.cookie('refresh_token', loginRes.refresh_token, {
+    res.cookie('refresh_token', refreshRes.refresh_token, {
       httpOnly: true,
       secure: process.env.APP_ENV! === 'production',
       sameSite: process.env.APP_ENV! === 'production' ? 'none' : 'strict',
@@ -82,10 +60,16 @@ export class AuthController {
     });
 
     return res.json({
-      message: loginRes.message,
-      access_token: loginRes.access_token,
-      user: loginRes.user,
+      message: refreshRes.message,
+      access_token: refreshRes.access_token,
+      user: refreshRes.user,
     });
+  }
+
+  @Post('signup/email')
+  @HttpCode(HttpStatus.CREATED)
+  async signupWithEmail(@Body() createUserDto: CreateUserDto) {
+    return this.authService.singupWithEmail(createUserDto);
   }
 
   @Post('login/email')
@@ -100,20 +84,8 @@ export class AuthController {
       throw new InternalServerErrorException('Failed to login!');
     }
 
-    const access_token_expires = new Date(
-      Date.now() + parseInt(process.env.ACCESS_EXPIRES_AT!),
-    );
-
-    res.cookie('access_token', loginRes.access_token, {
-      httpOnly: true,
-      secure: process.env.APP_ENV! === 'production',
-      sameSite: process.env.APP_ENV! === 'production' ? 'none' : 'strict',
-      path: '/',
-      expires: access_token_expires,
-    });
-
     const refresh_token_expires = new Date(
-      Date.now() + parseInt(process.env.ACCESS_EXPIRES_AT!),
+      Date.now() + parseInt(process.env.REFRESH_EXPIRES_AT!),
     );
 
     res.cookie('refresh_token', loginRes.refresh_token, {
@@ -128,6 +100,34 @@ export class AuthController {
       message: loginRes.message,
       access_token: loginRes.access_token,
       user: loginRes.user,
+    });
+  }
+
+  @Get('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Req() req: Request, @Res() res: Response) {
+    if (!req.session || !req.session.id) {
+      throw new UnauthorizedException();
+    }
+
+    const logoutRes = await this.authService.logout(req.session.id);
+
+    console.log('logoutRes: ', logoutRes);
+
+    if (!logoutRes) {
+      throw new InternalServerErrorException('Failed to logout!');
+    }
+
+    res.cookie('refresh_token', '', {
+      httpOnly: true,
+      secure: process.env.APP_ENV! === 'production',
+      sameSite: process.env.APP_ENV! === 'production' ? 'none' : 'strict',
+      path: '/',
+      maxAge: 0,
+    });
+
+    return res.json({
+      message: logoutRes.message,
     });
   }
 }

@@ -129,86 +129,6 @@ export class AuthService {
     }
   }
 
-  async singupWithGoogle(authCode: string) {
-    try {
-      const userData = await this.getUserDataGoogle(authCode);
-
-      // Create user
-      const createUserRes = await this.userService.create({
-        first_name: userData.given_name,
-        last_name: userData.family_name,
-        email: userData.email,
-        email_verified: userData.email_verified,
-        picture: userData.picture,
-      });
-
-      console.log('createUserRes: ', createUserRes);
-
-      return createUserRes;
-    } catch (error) {
-      console.log('error: ', error);
-      throw error;
-    }
-  }
-
-  async loginWithGoogle(authCode: string): Promise<LoginUserRes> {
-    try {
-      const userData = await this.getUserDataGoogle(authCode);
-
-      const findUser = await this.userService.findByEmail(userData.email);
-
-      console.log('findUser: ', findUser);
-
-      if (!findUser) {
-        throw new BadRequestException('User is not registered!');
-      }
-
-      const createSession = await this.createSession(findUser.id);
-
-      await this.redis.hset(
-        `users:${findUser.id}`,
-        'session',
-        createSession.id,
-      );
-
-      const access_token = await this.tokenService.signAccessToken({
-        sub: {
-          session_id: createSession.id,
-        },
-      });
-
-      const refresh_token = await this.tokenService.signRefreshToken({
-        sub: {
-          session_id: createSession.id,
-        },
-      });
-
-      return {
-        message: 'You have logged in successfully',
-        session: createSession.id,
-        user: {
-          first_name: findUser.first_name,
-          last_name: findUser.last_name,
-          email: findUser.email,
-          email_verified: findUser.email_verified,
-          picture: findUser.picture,
-          status: findUser.status,
-          friends: findUser.friends,
-          sentFriendRequests: findUser.sentFriendRequests,
-          receviedFriendRequests: findUser.receviedFriendRequests,
-          id: findUser.id,
-          createdAt: findUser.createdAt,
-          updatedAt: findUser.updatedAt,
-        },
-        access_token,
-        refresh_token,
-      };
-    } catch (error) {
-      console.log('error: ', error);
-      throw error;
-    }
-  }
-
   async loginWithEmail(emailLoginDto: EmailLoginDto): Promise<LoginUserRes> {
     try {
       const findUser = await this.userService.findByEmail(
@@ -237,19 +157,19 @@ export class AuthService {
         }
       }
 
-      // if (!findUser.password) {
-      //   throw new BadRequestException('User have not set any password!');
-      // }
+      if (!findUser.password) {
+        throw new BadRequestException('User have not set any password!');
+      }
 
-      // // check password here
-      // const isMatch = await bcrypt.compare(
-      //   emailLoginDto.password,
-      //   findUser.password,
-      // );
+      // check password here
+      const isMatch = await bcrypt.compare(
+        emailLoginDto.password,
+        findUser.password,
+      );
 
-      // if (!isMatch) {
-      //   throw new UnauthorizedException('Incorrect credentials!');
-      // }
+      if (!isMatch) {
+        throw new UnauthorizedException('Incorrect credentials!');
+      }
 
       const createSession = await this.createSession(findUser.id);
 
@@ -293,13 +213,7 @@ export class AuthService {
 
   async logout(session_id: string) {
     try {
-      const data = await this.verifySession(session_id);
-
-      if (!data || !data.session) {
-        throw new UnauthorizedException();
-      }
-
-      await this.sessionRepo.update(data.session.id, {
+      await this.sessionRepo.update(session_id, {
         status: SessionStatus.LOGOUT,
       });
 
@@ -310,5 +224,62 @@ export class AuthService {
       console.log('error: ', error);
       throw error;
     }
+  }
+
+  async refreshToken(refresh_token: string | null | undefined) {
+    if (!refresh_token) {
+      throw new UnauthorizedException('Session expired, Please login again!');
+    }
+
+    const refreshTokenDecoded =
+      await this.tokenService.verifyRefreshToken(refresh_token);
+
+    if (
+      !refreshTokenDecoded ||
+      !refreshTokenDecoded.sub ||
+      !refreshTokenDecoded.sub.session_id
+    ) {
+      throw new UnauthorizedException('Session expired, Please login again!');
+    }
+
+    const verifySession = await this.verifySession(
+      refreshTokenDecoded.sub.session_id,
+    );
+
+    if (!verifySession) {
+      throw new UnauthorizedException('Session expired, Please login again!');
+    }
+
+    const new_access_token = await this.tokenService.signAccessToken({
+      sub: {
+        session_id: verifySession.session.id,
+      },
+    });
+
+    const new_refresh_token = await this.tokenService.signRefreshToken({
+      sub: {
+        session_id: verifySession.session.id,
+      },
+    });
+
+    return {
+      message: 'You have logged in successfully',
+      user: {
+        first_name: verifySession.user.first_name,
+        last_name: verifySession.user.last_name,
+        email: verifySession.user.email,
+        email_verified: verifySession.user.email_verified,
+        picture: verifySession.user.picture,
+        status: verifySession.user.status,
+        friends: verifySession.user.friends,
+        sentFriendRequests: verifySession.user.sentFriendRequests,
+        receviedFriendRequests: verifySession.user.receviedFriendRequests,
+        id: verifySession.user.id,
+        createdAt: verifySession.user.createdAt,
+        updatedAt: verifySession.user.updatedAt,
+      },
+      access_token: new_access_token,
+      refresh_token: new_refresh_token,
+    };
   }
 }
