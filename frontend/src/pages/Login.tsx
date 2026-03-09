@@ -1,7 +1,6 @@
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Controller, useForm } from "react-hook-form";
-import { FcGoogle } from "react-icons/fc";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LoginSchema,
@@ -12,9 +11,8 @@ import InputAdornment from "@mui/material/InputAdornment";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { useState } from "react";
 import { login } from "../features/auth/services/auth.service";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setUser } from "../features/user/user.slice";
-import type { RootState } from "../store/store";
 import toast from "react-hot-toast";
 import {
   startLoading,
@@ -42,7 +40,7 @@ const Login = () => {
     dispatch(startLoading());
     const loginRes = await login(data);
     setTimeout(() => dispatch(stopLoading()), 500);
-    
+
     console.log("loginRes: ", loginRes);
 
     if (loginRes && loginRes.status === 200) {

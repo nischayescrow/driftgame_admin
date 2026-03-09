@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Controller, useForm } from "react-hook-form";
-import { FcGoogle } from "react-icons/fc";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   SignUpSchema,

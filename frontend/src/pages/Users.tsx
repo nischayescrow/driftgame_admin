@@ -42,7 +42,6 @@ import {
 import Switch from "@mui/material/Switch";
 
 const Users = () => {
-  const dispatch = useDispatch<AppDispatch>();
   let debounceTimerRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);

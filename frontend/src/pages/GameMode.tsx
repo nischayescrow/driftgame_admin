@@ -1,47 +1,25 @@
-import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { HiDotsVertical } from "react-icons/hi";
 import toast from "react-hot-toast";
 import { FiPlus } from "react-icons/fi";
 import { LuFilter } from "react-icons/lu";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
-import Avatar from "@mui/material/Avatar";
 import { IoSearch } from "react-icons/io5";
 import { useEffect, useRef, useState } from "react";
-import {
-  addUser,
-  deleteUser,
-  editUser,
-  fetchUserById,
-  searchUsers,
-} from "../features/user/services/user.service";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../store/store";
 import BlockLoader from "../components/common/loader/BlockLoader";
-import type { UserDoc } from "../features/user/user.type";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { Controller, useForm } from "react-hook-form";
-
-import {
-  SignUpSchema,
-  type SignUpSchemaType,
-} from "../features/auth/schemas/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import InputAdornment from "@mui/material/InputAdornment";
-import { IoEye, IoEyeOff } from "react-icons/io5";
 import CircularProgress from "@mui/material/CircularProgress";
 import MyDialog from "../components/ui/MyDialog";
 import ActionButtons from "../components/ui/ActionButtons";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import {
-  EditUserSchema,
-  type EditUserSchemaType,
-} from "../features/user/schemas/user.schema";
-import Switch from "@mui/material/Switch";
+
 import {
   addMode,
   deleteMode,
@@ -54,7 +32,6 @@ import {
   AddModeSchema,
   EditModeSchema,
   type AddModeSchemaType,
-  type EditModeSchemaType,
 } from "../features/game/schemas/gameMode.schema";
 
 const GameMode = () => {
