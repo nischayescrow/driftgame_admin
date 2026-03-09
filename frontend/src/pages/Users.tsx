@@ -12,8 +12,6 @@ import {
   fetchUserById,
   searchUsers,
 } from "../features/user/services/user.service";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "../store/store";
 import BlockLoader from "../components/common/loader/BlockLoader";
 import type { UserDoc } from "../features/user/user.type";
 import Button from "@mui/material/Button";

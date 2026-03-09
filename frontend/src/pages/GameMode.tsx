@@ -35,16 +35,6 @@ import {
 } from "../features/game/schemas/gameMode.schema";
 
 const GameMode = () => {
-  const mode = {
-    id: "69a57af8609d31d68d9493f3",
-    name: "Training",
-    identity: "TLorem ipsum",
-    purpose: "TLorem ipsum",
-    map: "Desert Road",
-    players: 1,
-    status: 1,
-  };
-  const dispatch = useDispatch<AppDispatch>();
   let debounceTimerRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
