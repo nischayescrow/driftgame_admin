@@ -1,12 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isObjectIdOrHexString, Model } from 'mongoose';
-import {
-  GameMode,
-  GameModeDocument,
-  GameModeStatus,
-} from '../schemas/gameMode.schema';
-import { GameModeProj } from '../types/lobby.type';
+import { GameMode, GameModeDocument, GameModeStatus } from './schemas/gameMode.schema';
+import { GameModeProj } from './types/gamemode.type';
 
 @Injectable()
 export class GameModeRepository {

@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateGameModeDto } from '../dto/updateGameMode.dto';
-import { CreateGameModeDto } from '../dto/createGameMode.dto';
-import { GameModeProj } from '../types/lobby.type';
-import { GameModeRepository } from '../repositories/gamemode.repository';
-import { GameModeDocument, GameModeStatus } from '../schemas/gameMode.schema';
+import { GameModeRepository } from './gamemode.repository';
+import { GameModeProj } from './types/gamemode.type';
+import { CreateGameModeDto } from './dto/createGameMode.dto';
+import { GameModeStatus } from './schemas/gameMode.schema';
+import { UpdateGameModeDto } from './dto/updateGameMode.dto';
 
 @Injectable()
 export class GamemodeService {

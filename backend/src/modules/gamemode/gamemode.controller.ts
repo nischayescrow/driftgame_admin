@@ -10,26 +10,22 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { LobbyService } from './lobby.service';
+import { GamemodeService } from './gamemode.service';
 import { CreateGameModeDto } from './dto/createGameMode.dto';
 import { UpdateGameModeDto } from './dto/updateGameMode.dto';
-import { GamemodeService } from './gamemode/gamemode.service';
 
-@Controller('admin/lobby')
-export class LobbyController {
-  constructor(
-    private readonly lobbyService: LobbyService,
-    private readonly gamemodeService: GamemodeService,
-  ) {}
+@Controller('admin/gamemode')
+export class GamemodeController {
+  constructor(private readonly gamemodeService: GamemodeService) {}
 
   // <============== GameMode ==============>
-  @Post('gamemode/create')
+  @Post('create')
   @HttpCode(HttpStatus.CREATED)
   createGameMode(@Body() createGameModeDto: CreateGameModeDto) {
     return this.gamemodeService.create(createGameModeDto);
   }
 
-  @Get('gamemode/findall')
+  @Get('findall')
   @HttpCode(HttpStatus.OK)
   findAllGameMode(
     @Query('limit') limit: number,
@@ -39,13 +35,13 @@ export class LobbyController {
     return this.gamemodeService.findAll(limit, page, all);
   }
 
-  @Get('gamemode/find/:id')
+  @Get('find/:id')
   @HttpCode(HttpStatus.OK)
   findOneGameMode(@Param('id') id: string, @Query('all') all: boolean) {
     return this.gamemodeService.findById(id, all);
   }
 
-  @Get('gamemode/search')
+  @Get('search')
   @HttpCode(HttpStatus.OK)
   searchUser(
     @Query('text') text: string,
@@ -60,7 +56,7 @@ export class LobbyController {
     return this.gamemodeService.search(text, limit, page, all);
   }
 
-  @Patch('gamemode/update/:id')
+  @Patch('update/:id')
   @HttpCode(HttpStatus.OK)
   updateGameMode(
     @Param('id') id: string,
@@ -69,7 +65,7 @@ export class LobbyController {
     return this.gamemodeService.updateById(id, updateGameModeDto);
   }
 
-  @Delete('gamemode/delete/:id')
+  @Delete('delete/:id')
   @HttpCode(HttpStatus.OK)
   removeGameMode(@Param('id') id: string) {
     return this.gamemodeService.deleteById(id);

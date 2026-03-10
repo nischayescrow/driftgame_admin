@@ -21,7 +21,7 @@ export class AuthMiddleware implements NestMiddleware {
       const path = req.originalUrl;
 
       console.log('Middleware: ', path);
-      // console.log('authorization: ', authorization);
+      console.log('authorization: ', authorization);
 
       if (
         !authorization ||

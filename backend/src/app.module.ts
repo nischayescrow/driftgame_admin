@@ -6,8 +6,7 @@ import {
 } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LobbyModule } from './modules/lobby/lobby.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { JwtModule } from '@nestjs/jwt';
@@ -15,6 +14,8 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { AuthMiddleware } from './middlewares/auth/auth.middleware';
+import { GamemodeModule } from './modules/gamemode/gamemode.module';
+import { PlayerlevelModule } from './modules/playerlevel/playerlevel.module';
 
 @Module({
   imports: [
@@ -32,9 +33,10 @@ import { AuthMiddleware } from './middlewares/auth/auth.middleware';
     }),
     JwtModule.register({ global: true }),
     RedisModule,
-    LobbyModule,
     UserModule,
     AuthModule,
+    GamemodeModule,
+    PlayerlevelModule,
   ],
   controllers: [AppController],
   providers: [AppService],
