@@ -31,7 +31,7 @@ export class GameModeRepository {
       throw new BadRequestException('Invalid user id!');
     }
 
-    console.log('findById: ', id);
+    // console.log('findById: ', id);
 
     const findQuery = all
       ? {
@@ -50,7 +50,7 @@ export class GameModeRepository {
     all: boolean = false,
     gameModeProj: GameModeProj,
   ): Promise<GameModeDocument[] | null> {
-    console.log('findByName: ', name);
+    // console.log('findByName: ', name);
 
     const findQuery = all
       ? {

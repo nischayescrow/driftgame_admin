@@ -74,7 +74,7 @@ export class FriendReqService {
 
   async deleteById(id: string) {
     try {
-      console.log('UpdateId: ', id);
+      // console.log('UpdateId: ', id);
       const findReq = await this.findById(id);
 
       await this.friendReqRepo.delete(findReq.id);

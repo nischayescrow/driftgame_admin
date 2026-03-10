@@ -35,13 +35,16 @@ export class AuthController {
   @Get('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Req() req: Request, @Res() res: Response) {
-    console.log('req.cookies: ', req.cookies);
     const refresh_token = req.cookies['refresh_token'];
-    console.log('refresh_token', refresh_token);
+    // console.log('refresh_token', refresh_token);
+
+    if (!refresh_token) {
+      throw new UnauthorizedException();
+    }
 
     const refreshRes = await this.authService.refreshToken(refresh_token);
 
-    console.log('refreshRes: ', refreshRes);
+    // console.log('refreshRes: ', refreshRes);
 
     if (!refreshRes || !refreshRes.access_token || !refreshRes.refresh_token) {
       throw new InternalServerErrorException('Failed to refresh!');
@@ -106,13 +109,13 @@ export class AuthController {
   @Get('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req: Request, @Res() res: Response) {
-    if (!req.session || !req.session.id) {
+    if (!req.user || !req.session || !req.session.session_id) {
       throw new UnauthorizedException();
     }
 
-    const logoutRes = await this.authService.logout(req.session.id);
+    const logoutRes = await this.authService.logout(req.user.id);
 
-    console.log('logoutRes: ', logoutRes);
+    // console.log('logoutRes: ', logoutRes);
 
     if (!logoutRes) {
       throw new InternalServerErrorException('Failed to logout!');

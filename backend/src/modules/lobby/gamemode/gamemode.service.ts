@@ -61,7 +61,7 @@ export class GamemodeService {
         this.gameModeProj,
       );
 
-      console.log(findModes);
+      // console.log(findModes);
 
       return {
         data: findModes.modes,
@@ -110,7 +110,7 @@ export class GamemodeService {
         this.gameModeProj,
       );
 
-      console.log('findGameMode: ', findGameMode);
+      // console.log('findGameMode: ', findGameMode);
 
       if (findGameMode && findGameMode.length > 1) {
         throw new BadRequestException('Game mode with name already exist!');

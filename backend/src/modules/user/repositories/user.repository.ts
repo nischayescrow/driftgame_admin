@@ -43,7 +43,7 @@ export class UserRepository {
       throw new BadRequestException('Invalid user id!');
     }
 
-    console.log('findById: ', id);
+    // console.log('findById: ', id);
 
     const findQuery = all
       ? {

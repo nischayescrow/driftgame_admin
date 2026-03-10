@@ -52,8 +52,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const handleLogout = async () => {
     dispatch(startLoading());
     const logoutRes = await logout();
-    dispatch(stopLoading());
-    console.log("logoutRes: ", logoutRes);
+    setTimeout(() => dispatch(stopLoading()), 500);
+    // console.log("logoutRes: ", logoutRes);
 
     if (logoutRes && logoutRes.status === 200) {
       closeUserMenu();

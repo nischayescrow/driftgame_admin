@@ -81,7 +81,7 @@ export class UserService {
           : this.userDataProjection,
       );
 
-      console.log('findUser', findUser);
+      // console.log('findUser', findUser);
 
       return findUser;
     } catch (error) {
@@ -106,7 +106,7 @@ export class UserService {
         pass ? { ...this.findAllUserProj, password: 1 } : this.findAllUserProj,
       );
 
-      console.log(findUsers);
+      // console.log(findUsers);
 
       return {
         data: findUsers.users,
@@ -137,7 +137,7 @@ export class UserService {
         pass ? { ...this.findAllUserProj, password: 1 } : this.findAllUserProj,
       );
 
-      console.log(findUsers);
+      // console.log(findUsers);
 
       return {
         data: findUsers.users,
@@ -201,7 +201,7 @@ export class UserService {
 
   async deleteById(id: string) {
     try {
-      console.log('UpdateId: ', id);
+      // console.log('UpdateId: ', id);
       const findUser = await this.findById(id, true);
 
       await this.updateById(findUser.id, { status: UserStatus.DELETED });

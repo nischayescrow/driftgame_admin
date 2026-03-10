@@ -1,5 +1,4 @@
-import { User, UserDocument, UserStatus } from '../../user/schemas/user.schema';
-import { Session, SessionDocument } from '../schemas/session.schema';
+import { UserDocument } from '../../user/schemas/user.schema';
 
 export interface LoginUserRes {
   message: string;
@@ -10,6 +9,26 @@ export interface LoginUserRes {
 }
 
 export interface verifySessionRes {
-  session: SessionDocument;
+  session: SessionHash;
   user: UserDocument;
+}
+
+export interface SessionHash {
+  session_id: string;
+  user_id: string;
+  hashedToken: string;
+  status: number;
+  createdAt: number;
+}
+
+export interface TokenPayloadType {
+  user_id: string;
+  session_id: string;
+}
+
+export enum SessionStatus {
+  NOTACTIVE = 0,
+  ACTIVE = 1,
+  BLOCKED = 2,
+  LOGOUT = 3,
 }

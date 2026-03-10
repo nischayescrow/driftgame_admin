@@ -7,21 +7,24 @@ import {
 } from '@nestjs/common';
 import axios from 'axios';
 import { UserService } from '../user/user.service';
-import { SessionStatus } from './schemas/session.schema';
 import { TokenService } from './token.service';
-import { LoginUserRes, verifySessionRes } from './types/auth.type';
-import { User, UserStatus } from '../user/schemas/user.schema';
+import {
+  LoginUserRes,
+  SessionHash,
+  SessionStatus,
+  verifySessionRes,
+} from './types/auth.type';
+import { User, UserDocument, UserStatus } from '../user/schemas/user.schema';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { EmailLoginDto } from './dto/emailLogin.dto';
 import * as bcrypt from 'bcrypt';
 import { REDIS_CLIENT } from '../redis/redis.module';
 import Redis from 'ioredis';
-import { SessionRepository } from './repositories/session.repository';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly sessionRepo: SessionRepository,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
     @Inject(REDIS_CLIENT) private redis: Redis,
@@ -48,7 +51,7 @@ export class AuthService {
         },
       );
 
-      console.log('googleAccessTokenRes: ', googleAccessTokenRes.data);
+      // console.log('googleAccessTokenRes: ', googleAccessTokenRes.data);
 
       if (
         !googleAccessTokenRes.data ||
@@ -71,7 +74,7 @@ export class AuthService {
         throw new InternalServerErrorException('Failed to login with google!');
       }
 
-      console.log('UserInfoRes: ', UserInfoRes.data);
+      // console.log('UserInfoRes: ', UserInfoRes.data);
 
       return UserInfoRes.data;
     } catch (error) {
@@ -80,20 +83,22 @@ export class AuthService {
     }
   }
 
-  async createSession(user_id: string) {
-    return await this.sessionRepo.create({
-      user_id,
-      status: SessionStatus.ACTIVE,
-    });
-  }
-
-  async verifySession(session_id: string): Promise<verifySessionRes | null> {
+  async verifySession(
+    session_id: string,
+    user_id: string,
+  ): Promise<verifySessionRes | null> {
     try {
-      const findSession = await this.sessionRepo.findById(session_id);
+      const findSession = (await this.redis.hgetall(
+        `sessions:${user_id}`,
+      )) as unknown as SessionHash;
 
       // console.log('findSession: ', findSession);
 
-      if (!findSession || findSession.status !== SessionStatus.ACTIVE) {
+      if (
+        !findSession ||
+        findSession.session_id !== session_id ||
+        Number(findSession.status) !== SessionStatus.ACTIVE
+      ) {
         return null;
       }
 
@@ -118,7 +123,7 @@ export class AuthService {
       // Create user
       const createUserRes = await this.userService.create(createUserDto);
 
-      console.log('createUserRes: ', createUserRes);
+      // console.log('createUserRes: ', createUserRes);
 
       return {
         message: 'You have signed up successfully',
@@ -171,23 +176,42 @@ export class AuthService {
         throw new UnauthorizedException('Incorrect credentials!');
       }
 
-      const createSession = await this.createSession(findUser.id);
+      // const createSession = await this.createSession(findUser.id);
+      const createdSession = randomUUID();
 
       const access_token = await this.tokenService.signAccessToken({
-        sub: {
-          session_id: createSession.id,
-        },
+        session_id: createdSession,
+        user_id: findUser.id,
       });
 
       const refresh_token = await this.tokenService.signRefreshToken({
-        sub: {
-          session_id: createSession.id,
-        },
+        session_id: createdSession,
+        user_id: findUser.id,
       });
+
+      const refresh_token_expires = new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000,
+      );
+
+      const refresh_token_hashed = await bcrypt.hash(refresh_token, 10);
+
+      await this.redis.hset(`sessions:${findUser.id}`, {
+        session_id: createdSession,
+        user_id: findUser.id,
+        hashedToken: refresh_token_hashed,
+        status: SessionStatus.ACTIVE,
+        createdAt: Date.now(),
+        expiresAt: refresh_token_expires,
+      });
+
+      await this.redis.pexpire(
+        `sessions:${findUser.id}`,
+        7 * 24 * 60 * 60 * 1000,
+      );
 
       return {
         message: 'You have logged in successfully',
-        session: createSession.id,
+        session: createdSession,
         user: {
           first_name: findUser.first_name,
           last_name: findUser.last_name,
@@ -211,11 +235,9 @@ export class AuthService {
     }
   }
 
-  async logout(session_id: string) {
+  async logout(user_id: string) {
     try {
-      await this.sessionRepo.update(session_id, {
-        status: SessionStatus.LOGOUT,
-      });
+      await this.redis.del(`sessions:${user_id}`);
 
       return {
         message: 'User logout successfully',
@@ -226,57 +248,74 @@ export class AuthService {
     }
   }
 
-  async refreshToken(refresh_token: string | null | undefined) {
-    if (!refresh_token) {
-      throw new UnauthorizedException('Session expired, Please login again!');
-    }
-
+  async refreshToken(refresh_token: string) {
     const refreshTokenDecoded =
       await this.tokenService.verifyRefreshToken(refresh_token);
 
     if (
       !refreshTokenDecoded ||
-      !refreshTokenDecoded.sub ||
-      !refreshTokenDecoded.sub.session_id
+      !refreshTokenDecoded.user_id ||
+      !refreshTokenDecoded.session_id
     ) {
       throw new UnauthorizedException('Session expired, Please login again!');
     }
 
-    const verifySession = await this.verifySession(
-      refreshTokenDecoded.sub.session_id,
+    const userData = await this.verifySession(
+      refreshTokenDecoded.session_id,
+      refreshTokenDecoded.user_id,
     );
 
-    if (!verifySession) {
-      throw new UnauthorizedException('Session expired, Please login again!');
+    // console.log('userData: ', userData);
+
+    if (!userData) {
+      throw new UnauthorizedException('No active session, please login again!');
     }
 
     const new_access_token = await this.tokenService.signAccessToken({
-      sub: {
-        session_id: verifySession.session.id,
-      },
+      session_id: userData.session.session_id,
+      user_id: userData.user.id,
     });
 
     const new_refresh_token = await this.tokenService.signRefreshToken({
-      sub: {
-        session_id: verifySession.session.id,
-      },
+      session_id: userData.session.session_id,
+      user_id: userData.user.id,
     });
+
+    const new_refresh_token_hashed = await bcrypt.hash(new_refresh_token, 10);
+
+    const new_refresh_token_expires = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    );
+
+    await this.redis.hset(`sessions:${userData.user.id}`, {
+      session_id: userData.session.session_id,
+      user_id: userData.user.id,
+      hashedToken: new_refresh_token_hashed,
+      status: SessionStatus.ACTIVE,
+      createdAt: Date.now(),
+      expiresAt: new_refresh_token_expires,
+    });
+
+    await this.redis.pexpire(
+      `sessions:${userData.user.id}`,
+      7 * 24 * 60 * 60 * 1000,
+    );
 
     return {
       message: 'You have logged in successfully',
       user: {
-        first_name: verifySession.user.first_name,
-        last_name: verifySession.user.last_name,
-        email: verifySession.user.email,
-        email_verified: verifySession.user.email_verified,
-        picture: verifySession.user.picture,
-        status: verifySession.user.status,
-        friends: verifySession.user.friends,
-        sentFriendRequests: verifySession.user.sentFriendRequests,
-        receviedFriendRequests: verifySession.user.receviedFriendRequests,
-        id: verifySession.user.id,
-        createdAt: verifySession.user.createdAt,
-        updatedAt: verifySession.user.updatedAt,
+        first_name: userData.user.first_name,
+        last_name: userData.user.last_name,
+        email: userData.user.email,
+        email_verified: userData.user.email_verified,
+        picture: userData.user.picture,
+        status: userData.user.status,
+        friends: userData.user.friends,
+        sentFriendRequests: userData.user.sentFriendRequests,
+        receviedFriendRequests: userData.user.receviedFriendRequests,
+        id: userData.user.id,
+        createdAt: userData.user.createdAt,
+        updatedAt: userData.user.updatedAt,
       },
       access_token: new_access_token,
       refresh_token: new_refresh_token,
