@@ -34,7 +34,7 @@ import {
 
 const GameMode = () => {
   let debounceTimerRef = useRef<number | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [fetchingMode, setFetchingMode] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -754,6 +754,7 @@ const GameMode = () => {
                         value={value}
                         label="Mode Status"
                         onChange={onChange}
+                        disabled={adding}
                       >
                         <MenuItem value={0}>
                           <p className="text-slate-500 font-semibold">

@@ -41,7 +41,7 @@ import Switch from "@mui/material/Switch";
 
 const Users = () => {
   let debounceTimerRef = useRef<number | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [fetchingUser, setFetchingUser] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -760,6 +760,7 @@ const Users = () => {
                       name={name}
                       onChange={onChange}
                       slotProps={{ input: { "aria-label": "controlled" } }}
+                      disabled={adding}
                     />
                     <p className="min-h-5 text-sm text-red-600">
                       {editUserError.email ? editUserError.email.message : ""}
@@ -786,6 +787,7 @@ const Users = () => {
                       value={value}
                       label="Account Status"
                       onChange={onChange}
+                      disabled={adding}
                     >
                       <MenuItem value={0}>
                         <p className="text-slate-500 font-semibold">
