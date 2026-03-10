@@ -36,7 +36,7 @@ function App() {
   };
 
   useEffect(() => {
-    console.log("Current path: ", location.pathname);
+    // console.log("Current path: ", location.pathname);
     (async () => await verifyMe())();
   }, []);
 
@@ -48,11 +48,7 @@ function App() {
     }, 500);
 
     return () => clearTimeout(delay);
-  }, [location.pathname]);
-
-  useEffect(() => {
-    console.log("isPageLoading: ", isPageLoading);
-  }, [isPageLoading]);
+  }, []);
   return (
     <div className="max-w-screen overflow-hidden min-h-screen max-h-screen flex flex-col">
       {/* Loader */}

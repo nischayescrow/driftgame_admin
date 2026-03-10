@@ -12,6 +12,11 @@ const api = axios.create({
 export default api;
 
 let isRefreshing: boolean = false;
+let UnprotectedPaths = [
+  "/admin/auth/login/email",
+  "/admin/auth/signup/email",
+  "/admin/auth/refresh",
+];
 let failedQueue: {
   resolve: (value: any) => void;
   reject: (error: any) => void;
@@ -53,8 +58,7 @@ api.interceptors.response.use(
       !error.response ||
       error.response.status !== 401 ||
       originalRequest._retry ||
-      (originalRequest?.url.includes("admin/auth/") &&
-        originalRequest?.url !== "/admin/auth/verify/me")
+      UnprotectedPaths.includes(originalRequest?.url)
     ) {
       return Promise.reject(error);
     }
