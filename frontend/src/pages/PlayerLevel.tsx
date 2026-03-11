@@ -32,7 +32,7 @@ import {
   type AddModeSchemaType,
 } from "../features/gamemode/schemas/gameMode.schema";
 
-const GameMode = () => {
+const PlayerLevel = () => {
   let debounceTimerRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -58,11 +58,22 @@ const GameMode = () => {
 
   const columns: GridColDef[] = [
     { field: "id", headerName: "Id", type: "string", width: 210 },
-    { field: "name", headerName: "Name", type: "string", width: 130 },
-    { field: "identity", headerName: "Identity", type: "string", width: 130 },
+    { field: "level", headerName: "Level", type: "number", width: 130 },
     {
-      field: "purpose",
-      headerName: "Purpose",
+      field: "xpToLevel",
+      headerName: "XP to Level",
+      type: "number",
+      width: 130,
+    },
+    {
+      field: "displayName",
+      headerName: "Display Name",
+      type: "string",
+      width: 210,
+    },
+    {
+      field: "createdAt",
+      headerName: "CreatedAt",
       type: "string",
       width: 200,
     },
@@ -72,12 +83,7 @@ const GameMode = () => {
       type: "string",
       width: 130,
     },
-    {
-      field: "players",
-      headerName: "Players",
-      type: "number",
-      width: 130,
-    },
+
     {
       field: "status",
       headerName: "Mode status",
@@ -869,4 +875,4 @@ const GameMode = () => {
   );
 };
 
-export default GameMode;
+export default PlayerLevel;

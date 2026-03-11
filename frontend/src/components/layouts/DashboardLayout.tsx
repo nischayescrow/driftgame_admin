@@ -176,6 +176,16 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                         {openSideBar && <span>Modes</span>}
                       </NavLink>
                     </li>
+                    <li>
+                      <NavLink
+                        to="/playerlevels"
+                        className={({ isActive }) =>
+                          `w-full p-2 flex gap-2 items-center ${isActive ? "bg-primary text-white" : "text-black"} rounded-md text-sm font-semibold`
+                        }
+                      >
+                        {openSideBar && <span>Player Levels</span>}
+                      </NavLink>
+                    </li>
                   </ul>
                 </AccordionDetails>
               </Accordion>

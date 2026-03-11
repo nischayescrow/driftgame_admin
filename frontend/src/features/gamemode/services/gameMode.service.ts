@@ -8,7 +8,7 @@ import type {
 export const fetchAllMode = async (limit: number, page: number) => {
   try {
     const fetchAllUserRes = await api.get(
-      `/admin/user/get/all?limit=${limit}&page=${page}`,
+      `/admin/gamemode/findall?limit=${limit}&page=${page}`,
     );
 
     return fetchAllUserRes;
@@ -28,7 +28,7 @@ export const searchModes = async (
 ) => {
   try {
     const searchModesRes = await api.get(
-      `/admin/lobby/gamemode/search?text=${text}&limit=${limit}&page=${page}&all=true`,
+      `/admin/gamemode/search?text=${text}&limit=${limit}&page=${page}&all=true`,
     );
 
     return searchModesRes;
@@ -44,7 +44,7 @@ export const searchModes = async (
 export const fetchModeById = async (mode_id: string) => {
   try {
     const fetchModeRes = await api.get(
-      `/admin/lobby/gamemode/find/${mode_id}?all=true`,
+      `/admin/gamemode/find/${mode_id}?all=true`,
     );
 
     return fetchModeRes;
@@ -59,7 +59,7 @@ export const fetchModeById = async (mode_id: string) => {
 
 export const addMode = async (data: AddModeSchemaType) => {
   try {
-    const addRes = await api.post(`/admin/lobby/gamemode/create`, data);
+    const addRes = await api.post(`/admin/gamemode/create`, data);
 
     return addRes;
   } catch (error: any) {
@@ -74,7 +74,7 @@ export const addMode = async (data: AddModeSchemaType) => {
 export const editMode = async (mode_id: string, data: EditModeSchemaType) => {
   try {
     const editModeRes = await api.patch(
-      `/admin/lobby/gamemode/update/${mode_id}`,
+      `/admin/gamemode/update/${mode_id}`,
       data,
     );
 
@@ -90,9 +90,7 @@ export const editMode = async (mode_id: string, data: EditModeSchemaType) => {
 
 export const deleteMode = async (mode_id: string) => {
   try {
-    const deleteRes = await api.delete(
-      `/admin/lobby/gamemode/delete/${mode_id}`,
-    );
+    const deleteRes = await api.delete(`/admin/gamemode/delete/${mode_id}`);
 
     return deleteRes;
   } catch (error: any) {

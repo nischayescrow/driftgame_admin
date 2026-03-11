@@ -7,6 +7,7 @@ import DashboardLayout from "../components/layouts/DashboardLayout";
 import Dashboard from "../pages/Dashboard";
 import Users from "../pages/Users";
 import GameMode from "../pages/GameMode";
+import PlayerLevel from "../pages/PlayerLevel";
 
 const AppRouter = createBrowserRouter([
   {
@@ -50,6 +51,14 @@ const AppRouter = createBrowserRouter([
         element: (
           <DashboardLayout>
             <GameMode />
+          </DashboardLayout>
+        ),
+      },
+      {
+        path: "/playerlevels",
+        element: (
+          <DashboardLayout>
+            <PlayerLevel />
           </DashboardLayout>
         ),
       },
