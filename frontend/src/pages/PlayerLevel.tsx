@@ -17,19 +17,6 @@ import ActionButtons from "../components/ui/ActionButtons";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-
-import {
-  addMode,
-  deleteMode,
-  editMode,
-  fetchModeById,
-  searchModes,
-} from "../features/gamemode/services/gameMode.service";
-import {
-  AddModeSchema,
-  EditModeSchema,
-  type AddModeSchemaType,
-} from "../features/gamemode/schemas/gameMode.schema";
 import type { PlayerLevelDoc } from "../features/playerlevel/playerLevel.type";
 import {
   addLevel,

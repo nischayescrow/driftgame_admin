@@ -210,21 +210,6 @@ const SignUp = () => {
               Signin
             </NavLink>
           </p>
-
-          {/* <div className="my-5 flex items-center gap-x-3">
-            <p className="w-1/2 h-px bg-slate-300"></p>
-            <p className="text-nowrap">Create account with</p>
-            <p className="w-1/2 h-px bg-slate-300"></p>
-          </div>
-
-          <div className="flex justify-center items-center">
-            <button
-              type="button"
-              className="p-1 border border-slate-300 rounded-sm cursor-pointer hover:bg-slate-100"
-            >
-              <FcGoogle className="w-8 h-8" />
-            </button>
-          </div> */}
         </form>
       </div>
     </div>
