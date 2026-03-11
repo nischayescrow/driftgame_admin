@@ -5,12 +5,13 @@ import Loader from "./components/common/loader/Loader";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "./store/store";
 import { useEffect, useState } from "react";
-import { verifyUser } from "./features/auth/services/auth.service";
+import { logout, verifyUser } from "./features/auth/services/auth.service";
 import { AuthRoutes, ProtectedRoutes } from "./lib/constants/ProtectedRoutes";
 import {
   startLoading,
   stopLoading,
 } from "./components/common/loader/loader.slice";
+import { removeUser } from "./features/user/user.slice";
 
 function App() {
   const isLoading = useSelector((state: RootState) => state.loader.isLoading);
@@ -27,7 +28,14 @@ function App() {
 
     if (!verifyMeRes && ProtectedRoutes.includes(location.pathname)) {
       console.log("Navigate to login page!!");
-      navigate("/");
+
+      dispatch(startLoading());
+      await logout();
+      setTimeout(() => dispatch(stopLoading()), 500);
+      // console.log("logoutRes: ", logoutRes);
+
+      dispatch(removeUser());
+      navigate("/", { replace: true });
     }
 
     if (verifyMeRes && AuthRoutes.includes(location.pathname)) {

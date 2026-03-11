@@ -33,8 +33,8 @@ export class PlayerlevelController {
 
   @Get('find/:id')
   @HttpCode(HttpStatus.OK)
-  findOneLevel(@Param('id') id: string) {
-    return this.playerlevelService.findById(id);
+  findOneLevel(@Param('id') id: string, @Query('all') all: boolean) {
+    return this.playerlevelService.findById(id, all);
   }
 
   @Get('search')

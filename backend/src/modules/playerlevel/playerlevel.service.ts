@@ -12,9 +12,9 @@ import { PlayerLevelStatus } from './schemas/playerLevel.schema';
 export class PlayerlevelService {
   constructor(private readonly playerLevelRepo: PlayerLevelRepository) {}
 
-  async findById(id: string) {
+  async findById(id: string, all: boolean = false) {
     try {
-      const findPlayerLevel = await this.playerLevelRepo.findById(id);
+      const findPlayerLevel = await this.playerLevelRepo.findById(id, all);
 
       // console.log('findById', findConfig);
 

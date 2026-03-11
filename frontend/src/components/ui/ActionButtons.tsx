@@ -12,8 +12,7 @@ const ActionButtons = ({
     React.SetStateAction<{
       status: boolean;
       actionType: "view" | "edit" | "delete" | null;
-      user_id?: string | null;
-      mode_id?: string | null;
+      id: string | null;
     }>
   >;
 }) => {
@@ -31,8 +30,7 @@ const ActionButtons = ({
     method({
       status: true,
       actionType,
-      user_id: rowId,
-      mode_id: rowId,
+      id: rowId,
     });
   };
 

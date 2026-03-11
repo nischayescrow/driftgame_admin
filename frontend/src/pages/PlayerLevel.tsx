@@ -25,70 +25,98 @@ import {
   fetchModeById,
   searchModes,
 } from "../features/gamemode/services/gameMode.service";
-import type { GameModeDoc } from "../features/gamemode/gameMode.type";
 import {
   AddModeSchema,
   EditModeSchema,
   type AddModeSchemaType,
 } from "../features/gamemode/schemas/gameMode.schema";
+import type { PlayerLevelDoc } from "../features/playerlevel/playerLevel.type";
+import {
+  addLevel,
+  deleteLevel,
+  editLevel,
+  fetchLevelById,
+  searchLevels,
+} from "../features/playerlevel/services/playerLevel.service";
+import {
+  AddLevelSchema,
+  EditLevelSchema,
+  type AddLevelSchemaType,
+} from "../features/playerlevel/schemas/playerLevel.schema";
 
 const PlayerLevel = () => {
   let debounceTimerRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
-  const [fetchingMode, setFetchingMode] = useState(false);
+  const [fetchingLevel, setFetchingLevel] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-  const [totalModes, setTotalModes] = useState<number>(0);
+  const [totalLevels, setTotalLevels] = useState<number>(0);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
   });
-  const [modes, setModes] = useState<GameModeDoc[]>([]);
+  const [levels, setLevel] = useState<PlayerLevelDoc[]>([]);
   const [addDialog, setAddDialog] = useState(false);
   const [editDialog, setEditDialog] = useState<{
     status: boolean;
     actionType: "view" | "edit" | "delete" | null;
-    mode_id?: string | null;
+    id: string | null;
   }>({
     status: false,
     actionType: null,
-    mode_id: null,
+    id: null,
   });
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "Id", type: "string", width: 210 },
-    { field: "level", headerName: "Level", type: "number", width: 130 },
+    {
+      field: "id",
+      headerName: "Id",
+      type: "string",
+      headerAlign: "left",
+      align: "left",
+      width: 210,
+    },
+    {
+      field: "level",
+      headerName: "Level",
+      type: "number",
+      headerAlign: "left",
+      align: "left",
+      width: 100,
+    },
     {
       field: "xpToLevel",
       headerName: "XP to Level",
       type: "number",
+      headerAlign: "left",
+      align: "left",
       width: 130,
     },
     {
       field: "displayName",
       headerName: "Display Name",
       type: "string",
+      headerAlign: "left",
+      align: "left",
       width: 210,
     },
     {
       field: "createdAt",
-      headerName: "CreatedAt",
+      headerName: "Created At",
       type: "string",
-      width: 200,
+      width: 180,
+      headerAlign: "left",
+      align: "left",
+      renderCell: (params) =>
+        `${new Date(params.value).toLocaleString("en-IN")}`,
     },
-    {
-      field: "map",
-      headerName: "Map",
-      type: "string",
-      width: 130,
-    },
-
     {
       field: "status",
-      headerName: "Mode status",
+      headerName: "Level status",
       type: "number",
       width: 130,
+      headerAlign: "center",
       align: "center",
       renderCell: ({ value }) => (
         <>
@@ -110,6 +138,7 @@ const PlayerLevel = () => {
       field: "actions",
       headerName: "Actions",
       width: 70,
+      headerAlign: "center",
       align: "center",
       sortable: false,
       filterable: false,
@@ -120,9 +149,9 @@ const PlayerLevel = () => {
   ];
 
   // <==================== GetAllUsers OR SearchUser ====================>
-  const searchMode = async (text: string = "") => {
+  const searchLevel = async (text: string = "") => {
     setLoading(true);
-    const getAllModesRes = await searchModes(
+    const getAllLevelRes = await searchLevels(
       text,
       paginationModel.pageSize,
       paginationModel.page,
@@ -132,56 +161,53 @@ const PlayerLevel = () => {
       setLoading(false);
     }, 300);
 
-    console.log("getAllModesRes: ", getAllModesRes);
+    console.log("getAllLevelRes: ", getAllLevelRes);
 
-    if (getAllModesRes) {
-      const fetchedModes: GameModeDoc[] = getAllModesRes.data.data.map(
-        (md: GameModeDoc) => {
+    if (getAllLevelRes) {
+      const fetchedModes: PlayerLevelDoc[] = getAllLevelRes.data.data.map(
+        (lvl: PlayerLevelDoc) => {
           return {
-            id: md._id,
-            name: md.name,
-            identity: md.identity,
-            purpose: md.purpose,
-            map: md.map,
-            players: md.players,
-            status: md.status,
+            id: lvl._id,
+            level: lvl.level,
+            xpToLevel: lvl.xpToLevel,
+            displayName: lvl.displayName,
+            status: lvl.status,
+            createdAt: lvl.createdAt,
           };
         },
       );
-      setTotalModes(getAllModesRes.data.total);
-      setModes(fetchedModes);
+      setTotalLevels(getAllLevelRes.data.total);
+      setLevel(fetchedModes);
     } else {
-      setModes([]);
+      setLevel([]);
     }
   };
 
-  const handleModeSearch = (text: string = "") => {
+  const handleLevelSearch = (text: string = "") => {
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
     debounceTimerRef.current = setTimeout(async () => {
-      await searchMode(text);
+      await searchLevel(text);
     }, 500);
   };
 
   useEffect(() => {
-    handleModeSearch(searchText);
+    handleLevelSearch(searchText);
   }, [paginationModel, searchText]);
 
   // <==================== Add user ====================>
   const random = Math.ceil(Math.random() * 1000);
   let {
-    control: addModeControl,
-    handleSubmit: addModeSubmit,
-    reset: addModeReset,
-    formState: { errors: addModeError },
+    control: addLevelControl,
+    handleSubmit: addLevelSubmit,
+    reset: addLevelReset,
+    formState: { errors: addLevelError },
   } = useForm({
-    resolver: zodResolver(AddModeSchema),
+    resolver: zodResolver(AddLevelSchema),
     defaultValues: {
-      name: `Training Mode ${random}`,
-      identity: `Training Mode Indentity ${random}`,
-      purpose: `Training Mode Purpose ${random}`,
-      map: `Training map ${random}`,
-      players: 1,
+      level: random,
+      xpToLevel: random * 10,
+      displayName: `Level ${random}`,
     },
   });
 
@@ -192,22 +218,22 @@ const PlayerLevel = () => {
   const closeAddDialog = () => {
     if (!adding) {
       setAddDialog(false);
-      addModeReset();
+      addLevelReset();
     }
   };
 
-  const handleAddMode = async (data: AddModeSchemaType) => {
+  const handleAddLevel = async (data: AddLevelSchemaType) => {
     console.log(data);
     setAdding(true);
-    const addModeRes = await addMode(data);
+    const addLevelRes = await addLevel(data);
     setTimeout(() => {
       setAdding(false);
 
-      console.log(addModeRes);
+      console.log(addLevelRes);
 
-      if (addModeRes && addModeRes.status === 201) {
-        toast.success(addModeRes.data.message);
-        handleModeSearch(searchText);
+      if (addLevelRes && addLevelRes.status === 201) {
+        toast.success(addLevelRes.data.message);
+        handleLevelSearch(searchText);
         closeAddDialog();
       }
     }, 300);
@@ -215,40 +241,36 @@ const PlayerLevel = () => {
 
   // <==================== Edit Mode ====================>
   let {
-    control: editModeControl,
-    handleSubmit: editModeSubmit,
-    reset: editModeReset,
-    setValue: editModeSetVal,
-    formState: { errors: editModeError },
+    control: editLevelControl,
+    handleSubmit: editLevelSubmit,
+    reset: editLevelReset,
+    setValue: editLevelSetVal,
+    formState: { errors: editLevelError },
   } = useForm({
-    resolver: zodResolver(EditModeSchema),
+    resolver: zodResolver(EditLevelSchema),
     defaultValues: {
-      name: "",
-      identity: "",
-      purpose: "",
-      map: "",
-      players: 0,
+      level: random,
+      xpToLevel: random * 10,
+      displayName: `Level ${random}`,
       status: 0,
     },
   });
 
-  const openEditDialog = async (mode_id: string) => {
-    console.log("mode_id: ", mode_id);
-    setFetchingMode(true);
-    if (mode_id) {
-      const fetchMode = await fetchModeById(mode_id);
+  const openEditDialog = async (level_id: string) => {
+    console.log("level_id: ", level_id);
+    setFetchingLevel(true);
+    if (level_id) {
+      const fetchLevel = await fetchLevelById(level_id);
 
-      console.log("fetchMode: ", fetchMode);
-      if (fetchMode && fetchMode.data) {
-        editModeSetVal("name", fetchMode.data.name);
-        editModeSetVal("identity", fetchMode.data.identity);
-        editModeSetVal("purpose", fetchMode.data.purpose);
-        editModeSetVal("map", fetchMode.data.map);
-        editModeSetVal("players", fetchMode.data.players);
-        editModeSetVal("status", fetchMode.data.status);
+      console.log("fetchLevel: ", fetchLevel);
+      if (fetchLevel && fetchLevel.data.data) {
+        editLevelSetVal("level", fetchLevel.data.data.level);
+        editLevelSetVal("xpToLevel", fetchLevel.data.data.xpToLevel);
+        editLevelSetVal("displayName", fetchLevel.data.data.displayName);
+        editLevelSetVal("status", fetchLevel.data.data.status);
       }
     }
-    setFetchingMode(false);
+    setFetchingLevel(false);
   };
 
   const closeEditDialog = () => {
@@ -256,57 +278,57 @@ const PlayerLevel = () => {
       setEditDialog({
         status: false,
         actionType: null,
-        mode_id: null,
+        id: null,
       });
-      editModeReset();
+      editLevelReset();
     }
   };
 
-  const handleSaveMode = async (data: any) => {
-    if (!editDialog.mode_id) {
-      toast.error("User id do not found!");
-      throw new Error("User id do not found!");
+  const handleSaveLevel = async (data: any) => {
+    if (!editDialog.id) {
+      toast.error("Level id do not found!");
+      throw new Error("Level id do not found!");
     }
 
     console.log(data);
     setAdding(true);
-    const editUserRes = await editMode(editDialog.mode_id, data);
+    const editLevelRes = await editLevel(editDialog.id, data);
     setAdding(false);
 
-    console.log(editUserRes);
+    console.log(editLevelRes);
 
-    if (editUserRes && editUserRes.status === 200) {
-      toast.success(editUserRes.data.message);
-      handleModeSearch(searchText);
+    if (editLevelRes && editLevelRes.status === 200) {
+      toast.success(editLevelRes.data.message);
+      handleLevelSearch(searchText);
       closeEditDialog();
     }
   };
 
   // <==================== Delete user ====================>
-  const handleDeleteMode = async () => {
-    if (!editDialog.mode_id) {
-      toast.error("Mode id do not found!");
-      throw new Error("Mode id do not found!");
+  const handleDeleteLevel = async () => {
+    if (!editDialog.id) {
+      toast.error("Level id do not found!");
+      throw new Error("Level id do not found!");
     }
 
     setAdding(true);
-    const delModeRes = await deleteMode(editDialog.mode_id);
+    const delLevelRes = await deleteLevel(editDialog.id);
     setAdding(false);
 
-    console.log(delModeRes);
+    console.log(delLevelRes);
 
-    if (delModeRes && delModeRes.status === 200) {
-      toast.success(delModeRes.data.message);
-      handleModeSearch(searchText);
+    if (delLevelRes && delLevelRes.status === 200) {
+      toast.success(delLevelRes.data.message);
+      handleLevelSearch(searchText);
       closeEditDialog();
     }
   };
 
   useEffect(() => {
-    if (editDialog && editDialog.status && editDialog.mode_id) {
+    if (editDialog && editDialog.status && editDialog.id) {
       switch (editDialog.actionType) {
         case "edit": {
-          openEditDialog(editDialog.mode_id);
+          openEditDialog(editDialog.id);
           break;
         }
         case "delete": {
@@ -326,8 +348,8 @@ const PlayerLevel = () => {
         }}
       >
         <div>
-          <p className="text-xl font-bold">Users</p>
-          <p>Manage your users</p>
+          <p className="text-xl font-bold">Player Levels</p>
+          <p>Manage your player levels</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -350,14 +372,14 @@ const PlayerLevel = () => {
             onClick={openAddDialog}
           >
             <FiPlus />
-            <span>Add Mode</span>
+            <span>Add Level</span>
           </button>
         </div>
       </div>
 
-      {/* Game Mode Table */}
+      {/* Player level Table */}
       <div className={`flex-1 flex flex-col px-6 pb-6`}>
-        {/* Search mode.. */}
+        {/* Search level.. */}
         <div className="relative m-4 ms-0">
           <input
             type="text"
@@ -366,7 +388,7 @@ const PlayerLevel = () => {
               setSearchText(event.target.value)
             }
             className=" border border-slate-200 rounded-sm p-1.5 px-10 w-sm placeholder:font-semibold placeholder:text-sm"
-            placeholder="Search for mode..."
+            placeholder="Search for level..."
           />
 
           <button
@@ -377,7 +399,7 @@ const PlayerLevel = () => {
           </button>
         </div>
 
-        {/* Game Mode Data grid */}
+        {/* Player level Data grid */}
         <div className="relative flex flex-1 border border-slate-200 rounded-sm">
           {loading ? (
             <BlockLoader />
@@ -393,8 +415,8 @@ const PlayerLevel = () => {
               }}
             >
               <DataGrid
-                rows={modes}
-                rowCount={totalModes}
+                rows={levels}
+                rowCount={totalLevels}
                 columns={columns}
                 paginationMode="server"
                 paginationModel={paginationModel}
@@ -408,7 +430,7 @@ const PlayerLevel = () => {
           )}
         </div>
 
-        {/* Add Mode dialog */}
+        {/* Add Level dialog */}
         <MyDialog
           onClose={closeAddDialog}
           open={addDialog}
@@ -416,130 +438,20 @@ const PlayerLevel = () => {
         >
           <form
             className="w-lg p-7 bg-white rounded-sm shadow-md"
-            onSubmit={addModeSubmit(handleAddMode)}
+            onSubmit={addLevelSubmit(handleAddLevel)}
           >
-            {/* Mode Name */}
+            {/* Level no. */}
             <div className="mb-3">
               <Controller
-                name="name"
-                control={addModeControl}
-                render={({ field: { onChange, value, name } }) => (
-                  <>
-                    <TextField
-                      type="text"
-                      fullWidth
-                      size="small"
-                      label="Name"
-                      variant="outlined"
-                      name={name}
-                      value={value}
-                      onChange={onChange}
-                      disabled={adding}
-                    />
-                    <p className="min-h-5 text-sm text-red-600">
-                      {addModeError.name ? addModeError.name.message : ""}
-                    </p>
-                  </>
-                )}
-              />
-            </div>
-
-            {/* Identity */}
-            <div className="mb-3">
-              <Controller
-                name="identity"
-                control={addModeControl}
-                render={({ field: { onChange, value, name } }) => (
-                  <>
-                    <TextField
-                      type="text"
-                      multiline
-                      rows={3}
-                      fullWidth
-                      size="small"
-                      label="Identity"
-                      variant="outlined"
-                      name={name}
-                      value={value}
-                      onChange={onChange}
-                      disabled={adding}
-                    />
-                    <p className="min-h-5 text-sm text-red-600">
-                      {addModeError.identity
-                        ? addModeError.identity.message
-                        : ""}
-                    </p>
-                  </>
-                )}
-              />
-            </div>
-
-            {/* Purpose */}
-            <div className="mb-3">
-              <Controller
-                name="purpose"
-                control={addModeControl}
-                render={({ field: { onChange, value, name } }) => (
-                  <>
-                    <TextField
-                      type="text"
-                      multiline
-                      rows={3}
-                      fullWidth
-                      size="small"
-                      label="Purpose"
-                      variant="outlined"
-                      name={name}
-                      value={value}
-                      onChange={onChange}
-                      disabled={adding}
-                    />
-                    <p className="min-h-5 text-sm text-red-600">
-                      {addModeError.purpose ? addModeError.purpose.message : ""}
-                    </p>
-                  </>
-                )}
-              />
-            </div>
-
-            {/* Map */}
-            <div className="mb-3">
-              <Controller
-                name="map"
-                control={addModeControl}
-                render={({ field: { onChange, value, name } }) => (
-                  <>
-                    <TextField
-                      type="text"
-                      fullWidth
-                      size="small"
-                      label="Map"
-                      variant="outlined"
-                      name={name}
-                      value={value}
-                      onChange={onChange}
-                      disabled={adding}
-                    />
-                    <p className="min-h-5 text-sm text-red-600">
-                      {addModeError.map ? addModeError.map.message : ""}
-                    </p>
-                  </>
-                )}
-              />
-            </div>
-
-            {/* Players */}
-            <div className="mb-3">
-              <Controller
-                name="players"
-                control={addModeControl}
+                name="level"
+                control={addLevelControl}
                 render={({ field: { onChange, value, name } }) => (
                   <>
                     <TextField
                       type="number"
                       fullWidth
                       size="small"
-                      label="Players"
+                      label="Level"
                       variant="outlined"
                       name={name}
                       value={value}
@@ -547,7 +459,63 @@ const PlayerLevel = () => {
                       disabled={adding}
                     />
                     <p className="min-h-5 text-sm text-red-600">
-                      {addModeError.players ? addModeError.players.message : ""}
+                      {addLevelError.level ? addLevelError.level.message : ""}
+                    </p>
+                  </>
+                )}
+              />
+            </div>
+
+            {/* XP to level */}
+            <div className="mb-3">
+              <Controller
+                name="xpToLevel"
+                control={addLevelControl}
+                render={({ field: { onChange, value, name } }) => (
+                  <>
+                    <TextField
+                      type="number"
+                      fullWidth
+                      size="small"
+                      label="XP to level"
+                      variant="outlined"
+                      name={name}
+                      value={value}
+                      onChange={(ele) => onChange(Number(ele.target.value))}
+                      disabled={adding}
+                    />
+                    <p className="min-h-5 text-sm text-red-600">
+                      {addLevelError.xpToLevel
+                        ? addLevelError.xpToLevel.message
+                        : ""}
+                    </p>
+                  </>
+                )}
+              />
+            </div>
+
+            {/* Display Name */}
+            <div className="mb-3">
+              <Controller
+                name="displayName"
+                control={addLevelControl}
+                render={({ field: { onChange, value, name } }) => (
+                  <>
+                    <TextField
+                      type="text"
+                      fullWidth
+                      size="small"
+                      label="Display Name"
+                      variant="outlined"
+                      name={name}
+                      value={value}
+                      onChange={onChange}
+                      disabled={adding}
+                    />
+                    <p className="min-h-5 text-sm text-red-600">
+                      {addLevelError.displayName
+                        ? addLevelError.displayName.message
+                        : ""}
                     </p>
                   </>
                 )}
@@ -583,150 +551,38 @@ const PlayerLevel = () => {
                       }}
                     />
                   )}
-                  {adding ? "Adding..." : "Add Mode"}
+                  {adding ? "Adding..." : "Add Level"}
                 </div>
               </Button>
             </div>
           </form>
         </MyDialog>
 
-        {/* Edit Mode dialog */}
+        {/* Edit Level dialog */}
         <MyDialog
           onClose={closeEditDialog}
           open={editDialog.status && editDialog.actionType === "edit"}
           headerText="Edit Mode"
         >
           <div className="relative">
-            {fetchingMode && <BlockLoader />}
+            {fetchingLevel && <BlockLoader />}
 
             <form
               className="w-lg p-7 bg-white rounded-sm shadow-md"
-              onSubmit={editModeSubmit(handleSaveMode)}
+              onSubmit={editLevelSubmit(handleSaveLevel)}
             >
-              {/* Mode Name */}
+              {/* Level no. */}
               <div className="mb-3">
                 <Controller
-                  name="name"
-                  control={editModeControl}
-                  render={({ field: { onChange, value, name } }) => (
-                    <>
-                      <TextField
-                        type="text"
-                        fullWidth
-                        size="small"
-                        label="Name"
-                        variant="outlined"
-                        name={name}
-                        value={value}
-                        onChange={onChange}
-                        disabled={adding}
-                      />
-                      <p className="min-h-5 text-sm text-red-600">
-                        {editModeError.name ? editModeError.name.message : ""}
-                      </p>
-                    </>
-                  )}
-                />
-              </div>
-
-              {/* Identity */}
-              <div className="mb-3">
-                <Controller
-                  name="identity"
-                  control={editModeControl}
-                  render={({ field: { onChange, value, name } }) => (
-                    <>
-                      <TextField
-                        type="text"
-                        multiline
-                        rows={3}
-                        fullWidth
-                        size="small"
-                        label="Identity"
-                        variant="outlined"
-                        name={name}
-                        value={value}
-                        onChange={onChange}
-                        disabled={adding}
-                      />
-                      <p className="min-h-5 text-sm text-red-600">
-                        {editModeError.identity
-                          ? editModeError.identity.message
-                          : ""}
-                      </p>
-                    </>
-                  )}
-                />
-              </div>
-
-              {/* Purpose */}
-              <div className="mb-3">
-                <Controller
-                  name="purpose"
-                  control={editModeControl}
-                  render={({ field: { onChange, value, name } }) => (
-                    <>
-                      <TextField
-                        type="text"
-                        multiline
-                        rows={3}
-                        fullWidth
-                        size="small"
-                        label="Purpose"
-                        variant="outlined"
-                        name={name}
-                        value={value}
-                        onChange={onChange}
-                        disabled={adding}
-                      />
-                      <p className="min-h-5 text-sm text-red-600">
-                        {editModeError.purpose
-                          ? editModeError.purpose.message
-                          : ""}
-                      </p>
-                    </>
-                  )}
-                />
-              </div>
-
-              {/* Map */}
-              <div className="mb-3">
-                <Controller
-                  name="map"
-                  control={editModeControl}
-                  render={({ field: { onChange, value, name } }) => (
-                    <>
-                      <TextField
-                        type="text"
-                        fullWidth
-                        size="small"
-                        label="Map"
-                        variant="outlined"
-                        name={name}
-                        value={value}
-                        onChange={onChange}
-                        disabled={adding}
-                      />
-                      <p className="min-h-5 text-sm text-red-600">
-                        {editModeError.map ? editModeError.map.message : ""}
-                      </p>
-                    </>
-                  )}
-                />
-              </div>
-
-              {/* Players */}
-              <div className="mb-3">
-                <Controller
-                  name="players"
-                  control={editModeControl}
+                  name="level"
+                  control={editLevelControl}
                   render={({ field: { onChange, value, name } }) => (
                     <>
                       <TextField
                         type="number"
                         fullWidth
                         size="small"
-                        label="Players"
+                        label="Level"
                         variant="outlined"
                         name={name}
                         value={value}
@@ -734,8 +590,64 @@ const PlayerLevel = () => {
                         disabled={adding}
                       />
                       <p className="min-h-5 text-sm text-red-600">
-                        {editModeError.players
-                          ? editModeError.players.message
+                        {editLevelError.level
+                          ? editLevelError.level.message
+                          : ""}
+                      </p>
+                    </>
+                  )}
+                />
+              </div>
+
+              {/* XP to level */}
+              <div className="mb-3">
+                <Controller
+                  name="xpToLevel"
+                  control={editLevelControl}
+                  render={({ field: { onChange, value, name } }) => (
+                    <>
+                      <TextField
+                        type="number"
+                        fullWidth
+                        size="small"
+                        label="XP to level"
+                        variant="outlined"
+                        name={name}
+                        value={value}
+                        onChange={(ele) => onChange(Number(ele.target.value))}
+                        disabled={adding}
+                      />
+                      <p className="min-h-5 text-sm text-red-600">
+                        {editLevelError.xpToLevel
+                          ? editLevelError.xpToLevel.message
+                          : ""}
+                      </p>
+                    </>
+                  )}
+                />
+              </div>
+
+              {/* Display Name */}
+              <div className="mb-3">
+                <Controller
+                  name="displayName"
+                  control={editLevelControl}
+                  render={({ field: { onChange, value, name } }) => (
+                    <>
+                      <TextField
+                        type="text"
+                        fullWidth
+                        size="small"
+                        label="Display Name"
+                        variant="outlined"
+                        name={name}
+                        value={value}
+                        onChange={onChange}
+                        disabled={adding}
+                      />
+                      <p className="min-h-5 text-sm text-red-600">
+                        {editLevelError.displayName
+                          ? editLevelError.displayName.message
                           : ""}
                       </p>
                     </>
@@ -747,11 +659,11 @@ const PlayerLevel = () => {
               <div className="mb-3">
                 <Controller
                   name="status"
-                  control={editModeControl}
+                  control={editLevelControl}
                   render={({ field: { onChange, value, name } }) => (
                     <FormControl fullWidth>
                       <InputLabel id="mode-status-select-label">
-                        Mode Status
+                        Level Status
                       </InputLabel>
                       <Select
                         name={name}
@@ -778,8 +690,8 @@ const PlayerLevel = () => {
                         </MenuItem>
                       </Select>
                       <p className="min-h-5 text-sm text-red-600">
-                        {editModeError.status
-                          ? editModeError.status.message
+                        {editLevelError.status
+                          ? editLevelError.status.message
                           : ""}
                       </p>
                     </FormControl>
@@ -816,7 +728,7 @@ const PlayerLevel = () => {
                         }}
                       />
                     )}
-                    {adding ? "Saving..." : "Save Mode"}
+                    {adding ? "Saving..." : "Save Level"}
                   </div>
                 </Button>
               </div>
@@ -824,11 +736,11 @@ const PlayerLevel = () => {
           </div>
         </MyDialog>
 
-        {/* Delete confirmation */}
+        {/* Delete level confirmation */}
         <MyDialog
           onClose={closeEditDialog}
           open={editDialog.status && editDialog.actionType === "delete"}
-          headerText="Delete Mode"
+          headerText="Delete Level"
         >
           <div className="w-lg p-7">
             <p className="mb-7 text-lg font-semibold">Are you sure?</p>
@@ -850,7 +762,7 @@ const PlayerLevel = () => {
                 type="button"
                 variant="contained"
                 disabled={adding}
-                onClick={handleDeleteMode}
+                onClick={handleDeleteLevel}
               >
                 <div className="flex items-center gap-2">
                   {adding && (
@@ -864,7 +776,7 @@ const PlayerLevel = () => {
                       }}
                     />
                   )}
-                  {adding ? "Deleting..." : "Delete Mode"}
+                  {adding ? "Deleting..." : "Delete Level"}
                 </div>
               </Button>
             </div>

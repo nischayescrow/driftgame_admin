@@ -34,7 +34,7 @@ export class UserRepository {
 
   async findById(
     id: string,
-    all: boolean,
+    all: boolean = false,
     userProj: UserProj,
   ): Promise<UserDocument | null> {
     const isObjectId = isObjectIdOrHexString(id);

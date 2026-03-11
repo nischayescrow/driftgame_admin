@@ -1,7 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isObjectIdOrHexString, Model } from 'mongoose';
-import { PlayerLevel, PlayerLevelDocument } from './schemas/playerLevel.schema';
+import {
+  PlayerLevel,
+  PlayerLevelDocument,
+  PlayerLevelStatus,
+} from './schemas/playerLevel.schema';
 
 @Injectable()
 export class PlayerLevelRepository {
@@ -17,7 +21,10 @@ export class PlayerLevelRepository {
     return await playerLevel.save();
   }
 
-  async findById(id: string): Promise<PlayerLevelDocument | null> {
+  async findById(
+    id: string,
+    all: boolean = false,
+  ): Promise<PlayerLevelDocument | null> {
     const isObjectId = isObjectIdOrHexString(id);
 
     if (!isObjectId) {
@@ -26,17 +33,34 @@ export class PlayerLevelRepository {
 
     // console.log('findById: ', id);
 
-    return await this.plLevelModel.findOne({
-      _id: id,
-    });
+    const findQuery = all
+      ? {
+          _id: id,
+        }
+      : {
+          _id: id,
+          status: PlayerLevelStatus.ACTIVE,
+        };
+
+    return await this.plLevelModel.findOne(findQuery);
   }
 
-  async findByLevelNo(no: number): Promise<PlayerLevelDocument | null> {
+  async findByLevelNo(
+    no: number,
+    all: boolean = false,
+  ): Promise<PlayerLevelDocument | null> {
     // console.log('findById: ', id);
 
-    return await this.plLevelModel.findOne({
-      level: no,
-    });
+    const findQuery = all
+      ? {
+          level: no,
+        }
+      : {
+          level: no,
+          status: PlayerLevelStatus.ACTIVE,
+        };
+
+    return await this.plLevelModel.findOne(findQuery);
   }
 
   async search(

@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import Avatar from "@mui/material/Avatar";
 import { IoIosArrowDown } from "react-icons/io";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { HiUsers } from "react-icons/hi";
 import { IoGameController } from "react-icons/io5";
@@ -26,6 +26,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const [openSideBar, setOpenSideBar] = useState(true);
   const [gameAccord, setGameAccord] = useState(true);
   const [userMenu, setUserMenu] = useState<null | HTMLElement>(null);
+  const location = useLocation();
+  const gameAccPaths = ["/gamemodes", "/playerlevels"];
 
   const openUserMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     setUserMenu(event.currentTarget);
@@ -35,11 +37,9 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   };
 
   const toggleSideBar = () => {
-    if (openSideBar) {
-    }
     setOpenSideBar((prev) => {
       if (!prev) {
-        setGameAccord(true);
+        setTimeout(() => setGameAccord(true), 300);
       } else {
         setGameAccord(false);
       }
@@ -139,7 +139,13 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                   "& .MuiAccordionSummary-root": {
                     padding: "0 8px",
                     minHeight: 36,
-                    maxHeight: 48,
+                    maxHeight: 40,
+                    borderRadius: "4px",
+                    bgcolor:
+                      !openSideBar && gameAccPaths.includes(location.pathname)
+                        ? "#405189"
+                        : "white",
+                    color: !openSideBar ? "white" : "black",
                   },
                   "& .MuiAccordionDetails-root": {
                     padding: "0 10px",
@@ -149,8 +155,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                 <AccordionSummary
                   expandIcon={openSideBar ? <ExpandMoreIcon /> : <></>}
                   onClick={() => {
-                    console.log("Clicked");
-                    setGameAccord((prev) => !prev);
+                    if (!openSideBar) toggleSideBar();
+                    else setGameAccord((prev) => !prev);
                   }}
                 >
                   <div className="flex gap-2 items-center">
@@ -165,7 +171,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                   </div>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <ul className="">
+                  <ul className="flex flex-col gap-y-1.5">
                     <li>
                       <NavLink
                         to="/gamemodes"

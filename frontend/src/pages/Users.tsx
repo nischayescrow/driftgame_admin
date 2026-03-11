@@ -56,11 +56,11 @@ const Users = () => {
   const [editDialog, setEditDialog] = useState<{
     status: boolean;
     actionType: "view" | "edit" | "delete" | null;
-    user_id?: string | null;
+    id: string | null;
   }>({
     status: false,
     actionType: null,
-    user_id: null,
+    id: null,
   });
   const [passEye, setPassEye] = useState(true);
 
@@ -275,21 +275,21 @@ const Users = () => {
       setEditDialog({
         status: false,
         actionType: null,
-        user_id: null,
+        id: null,
       });
       editUserReset();
     }
   };
 
   const handleSaveUser = async (data: any) => {
-    if (!editDialog.user_id) {
+    if (!editDialog.id) {
       toast.error("User id do not found!");
       throw new Error("User id do not found!");
     }
 
     console.log(data);
     setAdding(true);
-    const editUserRes = await editUser(editDialog.user_id, data);
+    const editUserRes = await editUser(editDialog.id, data);
     setAdding(false);
 
     console.log(editUserRes);
@@ -303,13 +303,13 @@ const Users = () => {
 
   // <==================== Delete user ====================>
   const handleDeleteUser = async () => {
-    if (!editDialog.user_id) {
+    if (!editDialog.id) {
       toast.error("User id do not found!");
       throw new Error("User id do not found!");
     }
 
     setAdding(true);
-    const delUserRes = await deleteUser(editDialog.user_id);
+    const delUserRes = await deleteUser(editDialog.id);
     setAdding(false);
 
     console.log(delUserRes);
@@ -322,13 +322,13 @@ const Users = () => {
   };
 
   useEffect(() => {
-    if (editDialog && editDialog.status && editDialog.user_id) {
+    if (editDialog && editDialog.status && editDialog.id) {
       switch (editDialog.actionType) {
         case "view": {
           break;
         }
         case "edit": {
-          openEditDialog(editDialog.user_id);
+          openEditDialog(editDialog.id);
           break;
         }
         case "delete": {

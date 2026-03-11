@@ -49,41 +49,70 @@ const GameMode = () => {
   const [editDialog, setEditDialog] = useState<{
     status: boolean;
     actionType: "view" | "edit" | "delete" | null;
-    mode_id?: string | null;
+    id: string | null;
   }>({
     status: false,
     actionType: null,
-    mode_id: null,
+    id: null,
   });
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "Id", type: "string", width: 210 },
-    { field: "name", headerName: "Name", type: "string", width: 130 },
-    { field: "identity", headerName: "Identity", type: "string", width: 130 },
+    {
+      field: "id",
+      headerName: "Id",
+      type: "string",
+      headerAlign: "left",
+      align: "left",
+      width: 210,
+    },
+    {
+      field: "name",
+      headerName: "Name",
+      type: "string",
+      headerAlign: "left",
+      align: "left",
+      width: 150,
+    },
+    {
+      field: "identity",
+      headerName: "Identity",
+      type: "string",
+      headerAlign: "left",
+      align: "left",
+      width: 200,
+    },
     {
       field: "purpose",
       headerName: "Purpose",
       type: "string",
+      headerAlign: "left",
+      align: "left",
       width: 200,
     },
     {
       field: "map",
       headerName: "Map",
       type: "string",
+      headerAlign: "left",
+      align: "left",
       width: 130,
     },
     {
       field: "players",
       headerName: "Players",
       type: "number",
-      width: 130,
+      headerAlign: "left",
+      align: "center",
+      width: 80,
     },
     {
       field: "status",
       headerName: "Mode status",
       type: "number",
       width: 130,
+      headerAlign: "center",
       align: "center",
+
       renderCell: ({ value }) => (
         <>
           {value === 0 && (
@@ -104,6 +133,7 @@ const GameMode = () => {
       field: "actions",
       headerName: "Actions",
       width: 70,
+      headerAlign: "center",
       align: "center",
       sortable: false,
       filterable: false,
@@ -250,21 +280,21 @@ const GameMode = () => {
       setEditDialog({
         status: false,
         actionType: null,
-        mode_id: null,
+        id: null,
       });
       editModeReset();
     }
   };
 
   const handleSaveMode = async (data: any) => {
-    if (!editDialog.mode_id) {
+    if (!editDialog.id) {
       toast.error("User id do not found!");
       throw new Error("User id do not found!");
     }
 
     console.log(data);
     setAdding(true);
-    const editUserRes = await editMode(editDialog.mode_id, data);
+    const editUserRes = await editMode(editDialog.id, data);
     setAdding(false);
 
     console.log(editUserRes);
@@ -278,13 +308,13 @@ const GameMode = () => {
 
   // <==================== Delete user ====================>
   const handleDeleteMode = async () => {
-    if (!editDialog.mode_id) {
+    if (!editDialog.id) {
       toast.error("Mode id do not found!");
       throw new Error("Mode id do not found!");
     }
 
     setAdding(true);
-    const delModeRes = await deleteMode(editDialog.mode_id);
+    const delModeRes = await deleteMode(editDialog.id);
     setAdding(false);
 
     console.log(delModeRes);
@@ -297,10 +327,10 @@ const GameMode = () => {
   };
 
   useEffect(() => {
-    if (editDialog && editDialog.status && editDialog.mode_id) {
+    if (editDialog && editDialog.status && editDialog.id) {
       switch (editDialog.actionType) {
         case "edit": {
-          openEditDialog(editDialog.mode_id);
+          openEditDialog(editDialog.id);
           break;
         }
         case "delete": {
@@ -320,8 +350,8 @@ const GameMode = () => {
         }}
       >
         <div>
-          <p className="text-xl font-bold">Users</p>
-          <p>Manage your users</p>
+          <p className="text-xl font-bold">Game Modes</p>
+          <p>Manage your game modes</p>
         </div>
 
         <div className="flex items-center gap-3">

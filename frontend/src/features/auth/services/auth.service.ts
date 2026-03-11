@@ -38,7 +38,10 @@ export const verifyUser = async () => {
 
     if (error.status !== 401 || error.response.status !== 401) {
       toast.error(error.response ? error.response.data.message : error.message);
+      throw error;
     }
+
+    return false;
   }
 };
 
