@@ -8,6 +8,7 @@ import Dashboard from "../pages/Dashboard";
 import Users from "../pages/Users";
 import GameMode from "../pages/GameMode";
 import PlayerLevel from "../pages/PlayerLevel";
+import Car from "../pages/Car";
 
 const AppRouter = createBrowserRouter([
   {
@@ -59,6 +60,14 @@ const AppRouter = createBrowserRouter([
         element: (
           <DashboardLayout>
             <PlayerLevel />
+          </DashboardLayout>
+        ),
+      },
+      {
+        path: "/cars",
+        element: (
+          <DashboardLayout>
+            <Car />
           </DashboardLayout>
         ),
       },

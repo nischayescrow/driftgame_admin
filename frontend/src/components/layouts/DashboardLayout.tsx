@@ -172,6 +172,19 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                 </AccordionSummary>
                 <AccordionDetails>
                   <ul className="flex flex-col gap-y-1.5">
+                    {/* Cars */}
+                    <li>
+                      <NavLink
+                        to="/cars"
+                        className={({ isActive }) =>
+                          `w-full p-2 flex gap-2 items-center ${isActive ? "bg-primary text-white" : "text-black"} rounded-md text-sm font-semibold`
+                        }
+                      >
+                        {openSideBar && <span>Cars</span>}
+                      </NavLink>
+                    </li>
+
+                    {/* Game modes */}
                     <li>
                       <NavLink
                         to="/gamemodes"
@@ -182,6 +195,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                         {openSideBar && <span>Modes</span>}
                       </NavLink>
                     </li>
+
+                    {/* Player levels */}
                     <li>
                       <NavLink
                         to="/playerlevels"

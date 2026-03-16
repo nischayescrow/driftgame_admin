@@ -10,6 +10,21 @@ export class CarRepository {
     private carModel: Model<CarDocument>,
   ) {}
 
+  private carDocProj = {
+    _id: 1,
+    name: 1,
+    top_speed: 1,
+    engine: 1,
+    breaking: 1,
+    fuel: 1,
+    locked: 1,
+    unlocked_at_level: 1,
+    price_in_key: 1,
+    price_in_coin: 1,
+    offer_percentage: 1,
+    status: 1,
+  };
+
   async create(data: Partial<CarDocument>): Promise<CarDocument> {
     const car = new this.carModel(data);
     return await car.save();
@@ -34,7 +49,7 @@ export class CarRepository {
           status: CarStatus.ACTIVE,
         };
 
-    return await this.carModel.findOne(findQuery);
+    return await this.carModel.findOne(findQuery, this.carDocProj);
   }
 
   async findByName(
@@ -50,7 +65,7 @@ export class CarRepository {
           status: CarStatus.ACTIVE,
         };
 
-    return await this.carModel.findOne(findQuery);
+    return await this.carModel.findOne(findQuery, this.carDocProj);
   }
 
   async search(
@@ -63,7 +78,10 @@ export class CarRepository {
       $or: [{ name: { $regex: text, $options: 'i' } }],
     };
 
-    const cars = await this.carModel.find(findQuery).limit(limit).skip(skip);
+    const cars = await this.carModel
+      .find(findQuery, this.carDocProj)
+      .limit(limit)
+      .skip(skip);
     const totalCars = await this.carModel.countDocuments(findQuery);
 
     return {
@@ -81,7 +99,10 @@ export class CarRepository {
   }> {
     const skip = page * limit;
 
-    const cars = await this.carModel.find({}).limit(limit).skip(skip);
+    const cars = await this.carModel
+      .find({}, this.carDocProj)
+      .limit(limit)
+      .skip(skip);
     const totalCars = await this.carModel.countDocuments({});
 
     return {

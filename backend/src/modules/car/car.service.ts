@@ -6,7 +6,7 @@ import {
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
 import { CarRepository } from './car.repository';
-import { CarStatus } from './schemas/car.schema';
+import { CarDocument, CarStatus } from './schemas/car.schema';
 
 @Injectable()
 export class CarService {
@@ -22,8 +22,23 @@ export class CarService {
         throw new NotFoundException('Game mode do not found!');
       }
 
+      const data: Partial<CarDocument> & { id: string } = {
+        id: findCar.id,
+        name: findCar.name,
+        top_speed: findCar.top_speed,
+        engine: findCar.engine,
+        breaking: findCar.breaking,
+        fuel: findCar.fuel,
+        locked: findCar.locked,
+        unlocked_at_level: findCar.unlocked_at_level,
+        price_in_key: findCar.price_in_key,
+        price_in_coin: findCar.price_in_coin,
+        offer_percentage: findCar.offer_percentage,
+        status: findCar.status,
+      };
+
       return {
-        data: findCar,
+        data,
       };
     } catch (error) {
       console.log(error);
@@ -37,12 +52,38 @@ export class CarService {
 
       // console.log(findCar);
 
-      return {
-        data: findCar.data ?? [],
-        total: findCar.total,
-        page,
-        limit,
-      };
+      if (findCar && findCar.data && findCar.data.length > 0) {
+        const data = findCar.data.map((c) => {
+          return {
+            id: c.id,
+            name: c.name,
+            top_speed: c.top_speed,
+            engine: c.engine,
+            breaking: c.breaking,
+            fuel: c.fuel,
+            locked: c.locked,
+            unlocked_at_level: c.unlocked_at_level,
+            price_in_key: c.price_in_key,
+            price_in_coin: c.price_in_coin,
+            offer_percentage: c.offer_percentage,
+            status: c.status,
+          };
+        });
+
+        return {
+          data,
+          total: findCar.total,
+          page,
+          limit,
+        };
+      } else {
+        return {
+          data: [],
+          total: 0,
+          page,
+          limit,
+        };
+      }
     } catch (error) {
       console.log(error);
       throw error;
@@ -53,14 +94,38 @@ export class CarService {
     try {
       const findCar = await this.carRepo.findAll(limit, page);
 
-      // console.log('findById', findConfig);
+      if (findCar && findCar.data && findCar.data.length > 0) {
+        const data = findCar.data.map((c) => {
+          return {
+            id: c.id,
+            name: c.name,
+            top_speed: c.top_speed,
+            engine: c.engine,
+            breaking: c.breaking,
+            fuel: c.fuel,
+            locked: c.locked,
+            unlocked_at_level: c.unlocked_at_level,
+            price_in_key: c.price_in_key,
+            price_in_coin: c.price_in_coin,
+            offer_percentage: c.offer_percentage,
+            status: c.status,
+          };
+        });
 
-      return {
-        data: findCar.data ?? [],
-        total: findCar.total,
-        page,
-        limit,
-      };
+        return {
+          data,
+          total: findCar.total,
+          page,
+          limit,
+        };
+      } else {
+        return {
+          data: [],
+          total: 0,
+          page,
+          limit,
+        };
+      }
     } catch (error) {
       console.log(error);
       throw error;
