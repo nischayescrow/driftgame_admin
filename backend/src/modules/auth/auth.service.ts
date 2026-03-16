@@ -30,59 +30,6 @@ export class AuthService {
     @Inject(REDIS_CLIENT) private redis: Redis,
   ) {}
 
-  async getUserDataGoogle(authCode: string) {
-    const googleAccessTokenPayload = {
-      code: authCode,
-      client_id: process.env.GOOGLE_CLIENT_ID!,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      redirect_uri: 'postmessage',
-      grant_type: 'authorization_code',
-    };
-
-    try {
-      // Exchange Auth-code with Access_token
-      const googleAccessTokenRes = await axios.post(
-        'https://oauth2.googleapis.com/token',
-        googleAccessTokenPayload,
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        },
-      );
-
-      // console.log('googleAccessTokenRes: ', googleAccessTokenRes.data);
-
-      if (
-        !googleAccessTokenRes.data ||
-        !googleAccessTokenRes.data.access_token
-      ) {
-        throw new InternalServerErrorException('Failed to login with google!');
-      }
-
-      // Get Userinfo from google
-      const UserInfoRes = await axios.get(
-        'https://www.googleapis.com/oauth2/v3/userinfo',
-        {
-          headers: {
-            Authorization: `Bearer ${googleAccessTokenRes.data.access_token}`,
-          },
-        },
-      );
-
-      if (!UserInfoRes.data || !UserInfoRes.data.email) {
-        throw new InternalServerErrorException('Failed to login with google!');
-      }
-
-      // console.log('UserInfoRes: ', UserInfoRes.data);
-
-      return UserInfoRes.data;
-    } catch (error) {
-      console.log('error: ', error);
-      throw error;
-    }
-  }
-
   async verifySession(
     session_id: string,
     user_id: string,

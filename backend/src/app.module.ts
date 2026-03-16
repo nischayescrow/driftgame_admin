@@ -16,6 +16,7 @@ import { RedisModule } from './modules/redis/redis.module';
 import { AuthMiddleware } from './middlewares/auth/auth.middleware';
 import { GamemodeModule } from './modules/gamemode/gamemode.module';
 import { PlayerlevelModule } from './modules/playerlevel/playerlevel.module';
+import { CarModule } from './modules/car/car.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { PlayerlevelModule } from './modules/playerlevel/playerlevel.module';
     AuthModule,
     GamemodeModule,
     PlayerlevelModule,
+    CarModule,
   ],
   controllers: [AppController],
   providers: [AppService],
