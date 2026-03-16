@@ -6,8 +6,7 @@ export const AddCarSchema = z.object({
     .string()
     .trim()
     .min(1, "Car name is required!")
-    .min(3, "Car name must have minimum 3 characters")
-    .max(20, "Car name must have maximum 30 characters"),
+    .min(3, "Car name must have minimum 3 characters"),
   top_speed: z.coerce.number().min(1, "Top Speed no. must be greater than 0!"),
   engine: z.coerce.number().min(1, "Engine must be greater than 0!"),
   breaking: z.coerce.number().min(1, "Breaking must be greater than 0!"),
