@@ -27,7 +27,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const [gameAccord, setGameAccord] = useState(true);
   const [userMenu, setUserMenu] = useState<null | HTMLElement>(null);
   const location = useLocation();
-  const gameAccPaths = ["/gamemodes", "/playerlevels"];
+  const gameAccPaths = ["/gamemodes", "/playerlevels", "/cars"];
 
   const openUserMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     setUserMenu(event.currentTarget);

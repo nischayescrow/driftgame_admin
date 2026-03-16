@@ -19,7 +19,7 @@ export class CarService {
       // console.log('findById', findConfig);
 
       if (!findCar) {
-        throw new NotFoundException('Game mode do not found!');
+        throw new NotFoundException('Car do not found!');
       }
 
       const data: Partial<CarDocument> & { id: string } = {

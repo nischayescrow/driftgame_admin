@@ -19,21 +19,17 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import type { PlayerLevelDoc } from "../features/playerlevel/playerLevel.type";
 import {
-  addLevel,
-  deleteLevel,
-  editLevel,
-  fetchLevelById,
-  searchLevels,
-} from "../features/playerlevel/services/playerLevel.service";
-import {
-  AddLevelSchema,
-  EditLevelSchema,
-  type AddLevelSchemaType,
-} from "../features/playerlevel/schemas/playerLevel.schema";
-import { addCar, searchCars } from "../features/car/services/car.service";
+  addCar,
+  deleteCar,
+  editCar,
+  fetchCarById,
+  searchCars,
+} from "../features/car/services/car.service";
 import {
   AddCarSchema,
+  EditCarSchema,
   type AddCarSchemaType,
+  type EditCarSchemaType,
 } from "../features/car/schemas/car.schema";
 
 const Car = () => {
@@ -120,15 +116,11 @@ const Car = () => {
       renderCell: ({ value }) => (
         <>
           {value === 0 && (
-            <p className="text-slate-500 font-semibold">Not Active</p>
+            <p className="text-slate-500 font-semibold">Locked</p>
           )}
 
           {value === 1 && (
-            <p className="text-green-600 font-semibold">Active</p>
-          )}
-
-          {value === 2 && (
-            <p className="text-orange-600 font-semibold">Deleted</p>
+            <p className="text-green-600 font-semibold">Unlocked</p>
           )}
         </>
       ),
@@ -247,16 +239,16 @@ const Car = () => {
   } = useForm({
     resolver: zodResolver(AddCarSchema),
     defaultValues: {
-      name: "",
-      top_speed: 0,
-      engine: 0,
-      breaking: 0,
-      fuel: 0,
-      locked: 0,
-      unlocked_at_level: 0,
-      price_in_key: 0,
-      price_in_coin: 0,
-      offer_percentage: 0,
+      name: `car ${random}`,
+      top_speed: random,
+      engine: random,
+      breaking: random,
+      fuel: random,
+      locked: 1,
+      unlocked_at_level: Math.ceil(random / 100),
+      price_in_key: random,
+      price_in_coin: random * 100,
+      offer_percentage: random / 10,
     },
   });
 
@@ -288,104 +280,121 @@ const Car = () => {
     }, 300);
   };
 
-  // // <==================== Edit Mode ====================>
-  // let {
-  //   control: editLevelControl,
-  //   handleSubmit: editLevelSubmit,
-  //   reset: editLevelReset,
-  //   setValue: editLevelSetVal,
-  //   formState: { errors: editLevelError },
-  // } = useForm({
-  //   resolver: zodResolver(EditLevelSchema),
-  //   defaultValues: {
-  //     level: random,
-  //     xpToLevel: random * 10,
-  //     displayName: `Level ${random}`,
-  //     status: 0,
-  //   },
-  // });
+  // <==================== Edit Mode ====================>
+  let {
+    control: editCarControl,
+    handleSubmit: editCarSubmit,
+    reset: editCarReset,
+    setValue: editCarSetVal,
+    formState: { errors: editCarError },
+  } = useForm({
+    resolver: zodResolver(EditCarSchema),
+    defaultValues: {
+      name: "",
+      top_speed: 0,
+      engine: 0,
+      breaking: 0,
+      fuel: 0,
+      locked: 1,
+      unlocked_at_level: 0,
+      price_in_key: 0,
+      price_in_coin: 0,
+      offer_percentage: 0,
+      status: 0,
+    },
+  });
 
-  // const openEditDialog = async (level_id: string) => {
-  //   console.log("level_id: ", level_id);
-  //   setFetchingLevel(true);
-  //   if (level_id) {
-  //     const fetchLevel = await fetchLevelById(level_id);
+  const openEditDialog = async (car_id: string) => {
+    console.log("car_id: ", car_id);
+    setFetchingCar(true);
+    if (car_id) {
+      const fetchCar = await fetchCarById(car_id);
 
-  //     console.log("fetchLevel: ", fetchLevel);
-  //     if (fetchLevel && fetchLevel.data.data) {
-  //       editLevelSetVal("level", fetchLevel.data.data.level);
-  //       editLevelSetVal("xpToLevel", fetchLevel.data.data.xpToLevel);
-  //       editLevelSetVal("displayName", fetchLevel.data.data.displayName);
-  //       editLevelSetVal("status", fetchLevel.data.data.status);
-  //     }
-  //   }
-  //   setFetchingLevel(false);
-  // };
+      console.log("fetchCar: ", fetchCar);
+      if (fetchCar && fetchCar.data.data) {
+        editCarSetVal("name", fetchCar.data.data.name);
+        editCarSetVal("top_speed", fetchCar.data.data.top_speed);
+        editCarSetVal("engine", fetchCar.data.data.engine);
+        editCarSetVal("breaking", fetchCar.data.data.breaking);
+        editCarSetVal("fuel", fetchCar.data.data.fuel);
+        editCarSetVal("locked", fetchCar.data.data.locked);
+        editCarSetVal(
+          "unlocked_at_level",
+          fetchCar.data.data.unlocked_at_level,
+        );
+        editCarSetVal("price_in_key", fetchCar.data.data.price_in_key);
+        editCarSetVal("price_in_coin", fetchCar.data.data.price_in_coin);
+        editCarSetVal("offer_percentage", fetchCar.data.data.offer_percentage);
+        editCarSetVal("status", fetchCar.data.data.status);
+      }
+    }
+    setFetchingCar(false);
+  };
 
-  // const closeEditDialog = () => {
-  //   if (!adding) {
-  //     setEditDialog({
-  //       status: false,
-  //       actionType: null,
-  //       id: null,
-  //     });
-  //     editLevelReset();
-  //   }
-  // };
+  const closeEditDialog = () => {
+    if (!adding) {
+      setEditDialog({
+        status: false,
+        actionType: null,
+        id: null,
+      });
+      editCarReset();
+    }
+  };
 
-  // const handleSaveLevel = async (data: any) => {
-  //   if (!editDialog.id) {
-  //     toast.error("Level id do not found!");
-  //     throw new Error("Level id do not found!");
-  //   }
+  const handleSaveCar = async (data: EditCarSchemaType) => {
+    if (!editDialog.id) {
+      toast.error("CAr id do not found!");
+      throw new Error("Car id do not found!");
+    }
 
-  //   console.log(data);
-  //   setAdding(true);
-  //   const editLevelRes = await editLevel(editDialog.id, data);
-  //   setAdding(false);
+    console.log(data);
+    setAdding(true);
+    const editCarRes = await editCar(editDialog.id, data);
+    setAdding(false);
 
-  //   console.log(editLevelRes);
+    console.log(editCarRes);
 
-  //   if (editLevelRes && editLevelRes.status === 200) {
-  //     toast.success(editLevelRes.data.message);
-  //     handleLevelSearch(searchText);
-  //     closeEditDialog();
-  //   }
-  // };
+    if (editCarRes && editCarRes.status === 200) {
+      toast.success(editCarRes.data.message);
+      handleCarSearch(searchText);
+      closeEditDialog();
+    }
+  };
 
-  // // <==================== Delete user ====================>
-  // const handleDeleteLevel = async () => {
-  //   if (!editDialog.id) {
-  //     toast.error("Level id do not found!");
-  //     throw new Error("Level id do not found!");
-  //   }
+  // <==================== Delete user ====================>
+  const handleDeleteCar = async () => {
+    if (!editDialog.id) {
+      toast.error("Car do not found!");
+      throw new Error("Car do not found!");
+    }
 
-  //   setAdding(true);
-  //   const delLevelRes = await deleteLevel(editDialog.id);
-  //   setAdding(false);
+    setAdding(true);
+    const delCarRes = await deleteCar(editDialog.id);
+    setAdding(false);
 
-  //   console.log(delLevelRes);
+    console.log(delCarRes);
 
-  //   if (delLevelRes && delLevelRes.status === 200) {
-  //     toast.success(delLevelRes.data.message);
-  //     handleLevelSearch(searchText);
-  //     closeEditDialog();
-  //   }
-  // };
+    if (delCarRes && delCarRes.status === 200) {
+      toast.success(delCarRes.data.message);
+      handleCarSearch(searchText);
+      closeEditDialog();
+    }
+  };
 
-  // useEffect(() => {
-  //   if (editDialog && editDialog.status && editDialog.id) {
-  //     switch (editDialog.actionType) {
-  //       case "edit": {
-  //         openEditDialog(editDialog.id);
-  //         break;
-  //       }
-  //       case "delete": {
-  //         break;
-  //       }
-  //     }
-  //   }
-  // }, [editDialog]);
+  useEffect(() => {
+    if (editDialog && editDialog.status && editDialog.id) {
+      switch (editDialog.actionType) {
+        case "edit": {
+          openEditDialog(editDialog.id);
+          break;
+        }
+        case "delete": {
+          break;
+        }
+      }
+    }
+  }, [editDialog]);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -426,7 +435,7 @@ const Car = () => {
         </div>
       </div>
 
-      {/* Player level Table */}
+      {/* Car Table */}
       <div className={`flex-1 flex flex-col px-6 pb-6`}>
         {/* Search level.. */}
         <div className="relative m-4 ms-0">
@@ -480,7 +489,7 @@ const Car = () => {
         </div>
       </div>
 
-      {/* Add Level dialog */}
+      {/* Add car dialog */}
       <MyDialog onClose={closeAddDialog} open={addDialog} headerText="Add Car">
         <form
           className="w-lg p-7 bg-white rounded-sm shadow-md"
@@ -501,7 +510,7 @@ const Car = () => {
                     variant="outlined"
                     name={name}
                     value={value}
-                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    onChange={(ele) => onChange(ele.target.value)}
                     disabled={adding}
                   />
                   <p className="min-h-5 text-sm text-red-600">
@@ -527,7 +536,7 @@ const Car = () => {
                     variant="outlined"
                     name={name}
                     value={value}
-                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    onChange={(ele) => onChange(ele.target.value)}
                     disabled={adding}
                   />
                   <p className="min-h-5 text-sm text-red-600">
@@ -612,6 +621,38 @@ const Car = () => {
                     {addCarError.fuel ? addCarError.fuel.message : ""}
                   </p>
                 </>
+              )}
+            />
+          </div>
+
+          {/* Locked Status */}
+          <div className="mb-3">
+            <Controller
+              name="locked"
+              control={addCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <FormControl fullWidth>
+                  <InputLabel id="car-locked-select-label">Locked</InputLabel>
+                  <Select
+                    name={name}
+                    labelId="car-locked-select-label"
+                    value={value}
+                    label="Locked"
+                    size="small"
+                    onChange={onChange}
+                    disabled={adding}
+                  >
+                    <MenuItem value={0}>
+                      <p className="text-slate-500 font-semibold">Locked</p>
+                    </MenuItem>
+                    <MenuItem value={1}>
+                      <p className="text-green-600 font-semibold">Unlocked</p>
+                    </MenuItem>
+                  </Select>
+                  <p className="min-h-5 text-sm text-red-600">
+                    {addCarError.locked ? addCarError.locked.message : ""}
+                  </p>
+                </FormControl>
               )}
             />
           </div>
@@ -728,11 +769,191 @@ const Car = () => {
             />
           </div>
 
-          {/* Status */}
+          <div className="mb-7 flex gap-7">
+            <Button
+              fullWidth
+              type="button"
+              variant="contained"
+              color="error"
+              onClick={closeAddDialog}
+              disabled={adding}
+            >
+              Cancel
+            </Button>
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              disabled={adding}
+            >
+              <div className="flex items-center gap-2">
+                {adding && (
+                  <CircularProgress
+                    size="20px"
+                    sx={{
+                      "&.MuiCircularProgress-root": {
+                        animationDuration: "500ms",
+                        color: "white",
+                      },
+                    }}
+                  />
+                )}
+                {adding ? "Adding..." : "Add Car"}
+              </div>
+            </Button>
+          </div>
+        </form>
+      </MyDialog>
+
+      {/* Edit car dialog */}
+      <MyDialog
+        onClose={closeEditDialog}
+        open={editDialog.status && editDialog.actionType === "edit"}
+        headerText="Edit Car"
+      >
+        {fetchingCar && <BlockLoader />}
+
+        <form
+          className="w-lg p-7 bg-white rounded-sm shadow-md"
+          onSubmit={editCarSubmit(handleSaveCar)}
+        >
+          {/* Name */}
+          <div className="mb-3">
+            <Controller
+              name="name"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="string"
+                    fullWidth
+                    size="small"
+                    label="Name"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(ele.target.value)}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.name ? editCarError.name.message : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Top speed */}
+          <div className="mb-3">
+            <Controller
+              name="top_speed"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="small"
+                    label="Top speed"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.top_speed
+                      ? editCarError.top_speed.message
+                      : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Engine */}
+          <div className="mb-3">
+            <Controller
+              name="engine"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="small"
+                    label="Engine"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.engine ? editCarError.engine.message : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Breaking */}
+          <div className="mb-3">
+            <Controller
+              name="breaking"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="small"
+                    label="Breaking"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.breaking ? editCarError.breaking.message : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Fuel */}
+          <div className="mb-3">
+            <Controller
+              name="fuel"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="small"
+                    label="Fuel"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.fuel ? editCarError.fuel.message : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Locked Status */}
           <div className="mb-3">
             <Controller
               name="locked"
-              control={addCarControl}
+              control={editCarControl}
               render={({ field: { onChange, value, name } }) => (
                 <FormControl fullWidth>
                   <InputLabel id="car-locked-select-label">Locked</InputLabel>
@@ -753,7 +974,154 @@ const Car = () => {
                     </MenuItem>
                   </Select>
                   <p className="min-h-5 text-sm text-red-600">
-                    {addCarError.locked ? addCarError.locked.message : ""}
+                    {editCarError.locked ? editCarError.locked.message : ""}
+                  </p>
+                </FormControl>
+              )}
+            />
+          </div>
+
+          {/* Unlocked at level */}
+          <div className="mb-3">
+            <Controller
+              name="unlocked_at_level"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="small"
+                    label="Unlocked at level"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.unlocked_at_level
+                      ? editCarError.unlocked_at_level.message
+                      : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Price in key */}
+          <div className="mb-3">
+            <Controller
+              name="price_in_key"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="small"
+                    label="Price in key"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.price_in_key
+                      ? editCarError.price_in_key.message
+                      : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Price in coin */}
+          <div className="mb-3">
+            <Controller
+              name="price_in_coin"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="small"
+                    label="Price in coin"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.price_in_coin
+                      ? editCarError.price_in_coin.message
+                      : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Offer percentage */}
+          <div className="mb-3">
+            <Controller
+              name="offer_percentage"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="small"
+                    label="Offer (%)"
+                    variant="outlined"
+                    name={name}
+                    value={value}
+                    onChange={(ele) => onChange(Number(ele.target.value))}
+                    disabled={adding}
+                  />
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.offer_percentage
+                      ? editCarError.offer_percentage.message
+                      : ""}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+
+          {/* Status */}
+          <div className="mb-3">
+            <Controller
+              name="status"
+              control={editCarControl}
+              render={({ field: { onChange, value, name } }) => (
+                <FormControl fullWidth>
+                  <InputLabel id="car-locked-select-label">Status</InputLabel>
+                  <Select
+                    name={name}
+                    labelId="car-locked-select-label"
+                    value={value}
+                    label="Locked"
+                    size="small"
+                    onChange={onChange}
+                    disabled={adding}
+                  >
+                    <MenuItem value={0}>
+                      <p className="text-slate-500 font-semibold">Not Active</p>
+                    </MenuItem>
+                    <MenuItem value={1}>
+                      <p className="text-green-600 font-semibold">Active</p>
+                    </MenuItem>
+                    <MenuItem value={2}>
+                      <p className="text-red-600 font-semibold">Deleted</p>
+                    </MenuItem>
+                  </Select>
+                  <p className="min-h-5 text-sm text-red-600">
+                    {editCarError.locked ? editCarError.locked.message : ""}
                   </p>
                 </FormControl>
               )}
@@ -789,11 +1157,58 @@ const Car = () => {
                     }}
                   />
                 )}
-                {adding ? "Adding..." : "Add Car"}
+                {adding ? "Saving..." : "Save Car"}
               </div>
             </Button>
           </div>
         </form>
+      </MyDialog>
+
+      {/* Delete Car confirmation */}
+      <MyDialog
+        onClose={closeEditDialog}
+        open={editDialog.status && editDialog.actionType === "delete"}
+        headerText="Delete Car"
+      >
+        <div className="w-lg p-7">
+          <p className="mb-7 text-lg font-semibold">Are you sure?</p>
+
+          {/* Action buttons */}
+          <div className=" flex gap-7">
+            <Button
+              fullWidth
+              type="button"
+              variant="contained"
+              color="error"
+              onClick={closeEditDialog}
+              disabled={adding}
+            >
+              Cancel
+            </Button>
+            <Button
+              fullWidth
+              type="button"
+              variant="contained"
+              disabled={adding}
+              onClick={handleDeleteCar}
+            >
+              <div className="flex items-center gap-2">
+                {adding && (
+                  <CircularProgress
+                    size="20px"
+                    sx={{
+                      "&.MuiCircularProgress-root": {
+                        animationDuration: "500ms",
+                        color: "white",
+                      },
+                    }}
+                  />
+                )}
+                {adding ? "Deleting..." : "Delete Car"}
+              </div>
+            </Button>
+          </div>
+        </div>
       </MyDialog>
     </div>
   );
