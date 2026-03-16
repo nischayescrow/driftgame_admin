@@ -24,10 +24,10 @@ export const AddCarSchema = z.object({
     .min(0, "Price in key must be greater than or equal to 0!"),
   price_in_coin: z.coerce
     .number()
-    .min(1, "Price in coin must be greater than or equal to 0!"),
+    .min(0, "Price in coin must be greater than or equal to 0!"),
   offer_percentage: z.coerce
     .number()
-    .min(1, "Offer percentage must be greater than or equal to 0!"),
+    .min(0, "Offer percentage must be greater than or equal to 0!"),
 });
 
 export type AddCarSchemaType = z.infer<typeof AddCarSchema>;
