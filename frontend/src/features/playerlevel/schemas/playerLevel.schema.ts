@@ -5,13 +5,13 @@ export const AddLevelSchema = z.object({
   level: z.coerce.number().min(1, "Level no. must be greater than 0!"),
   xpToLevel: z.coerce
     .number()
-    .min(1, "XP to level no. must be greater than 0!"),
+    .min(0, "XP to level no. must be greater or equal than 0!"),
   displayName: z
     .string()
     .trim()
     .min(1, "Display name is required!")
-    .min(3, "Display name must have minimum 3 characters")
-    .max(20, "Display name must have maximum 20 characters"),
+    .min(3, "Display name must have minimum 3 characters"),
+  // .max(20, "Display name must have maximum 20 characters"),
 });
 
 export type AddLevelSchemaType = z.infer<typeof AddLevelSchema>;
@@ -24,14 +24,14 @@ export const EditLevelSchema = z.object({
     .optional(),
   xpToLevel: z.coerce
     .number()
-    .min(1, "XP to level no. must be greater than 0!")
+    .min(0, "XP to level no. must be greater or equal than 0!")
     .optional(),
   displayName: z
     .string()
     .trim()
     .min(1, "Display name is required!")
     .min(3, "Display name must have minimum 3 characters")
-    .max(20, "Display name must have maximum 20 characters")
+    // .max(20, "Display name must have maximum 20 characters")
     .optional(),
   status: z.coerce
     .number()
