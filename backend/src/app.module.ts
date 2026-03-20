@@ -17,6 +17,7 @@ import { AuthMiddleware } from './middlewares/auth/auth.middleware';
 import { GamemodeModule } from './modules/gamemode/gamemode.module';
 import { PlayerlevelModule } from './modules/playerlevel/playerlevel.module';
 import { CarModule } from './modules/car/car.module';
+import { ClientConfigModule } from './modules/client-config/client-config.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { CarModule } from './modules/car/car.module';
     GamemodeModule,
     PlayerlevelModule,
     CarModule,
+    ClientConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -14,6 +14,8 @@ const redisClientFactory: Provider<Redis> = {
       username: process.env.REDIS_USERNAME,
       password: process.env.REDIS_PASSWORD,
       keyPrefix: 'driftgame:',
+      lazyConnect: true,
+      maxRetriesPerRequest: 3,
     });
 
     client.on('connect', () => console.log('Connected Redis-Data'));
