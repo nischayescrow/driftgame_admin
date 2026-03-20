@@ -142,7 +142,7 @@ export class ClientConfigService {
       if (updated && updated.underMaintenance) {
         if (updated.underMaintenance.currentStatus && !oldMaintainanceStatus) {
           const isAlreadyInMaintainance = await this.redis.sismember(
-            `undermaintainance`,
+            `undermaintainance:list`,
             String(updated.clientBuildVersion),
           );
 
@@ -185,6 +185,20 @@ export class ClientConfigService {
 
           await this.redis.del(
             `undermaintainance:version:${updated.clientBuildVersion}`,
+          );
+
+          const maintainancePayload = {
+            clientBuildVersion: updated.clientBuildVersion,
+            isUnderMaintainance: false,
+            removedAt: Date.now(),
+            isBroadcatedOnce: false,
+          };
+
+          console.log('UnderMaintainance removal triggered!!');
+
+          this.redis.publish(
+            'under-maintenance:changed',
+            JSON.stringify(maintainancePayload),
           );
         }
       }
