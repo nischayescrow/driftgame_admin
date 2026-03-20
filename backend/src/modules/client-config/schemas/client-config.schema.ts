@@ -36,9 +36,6 @@ export class ClientConfig extends Document {
   @Prop({ type: UnderMaintenance })
   underMaintenance: UnderMaintenance;
 
-  @Prop({ type: Boolean, default: false })
-  isDeleted: boolean;
-
   createdAt?: Date;
   updatedAt?: Date;
 }

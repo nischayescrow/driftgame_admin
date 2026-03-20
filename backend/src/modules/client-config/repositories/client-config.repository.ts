@@ -27,14 +27,6 @@ export class ClientConfigRepository {
   }
 
   async findById(id: string): Promise<ClientConfigDocument | null> {
-    const isObjectId = isObjectIdOrHexString(id);
-
-    if (!isObjectId) {
-      throw new BadRequestException('Invalid config id!');
-    }
-
-    // console.log('findById: ', id);
-
     return await this.clientConfigModel.findOne({ _id: id });
   }
 
@@ -46,24 +38,12 @@ export class ClientConfigRepository {
     id: string,
     data: UpdateClientConfigDto,
   ): Promise<UpdateClientConfigDto | null> {
-    const isObjectId = isObjectIdOrHexString(id);
-
-    if (!isObjectId) {
-      throw new BadRequestException('Invalid config id!');
-    }
-
     return await this.clientConfigModel.findByIdAndUpdate(id, data, {
       returnDocument: 'after',
     });
   }
 
   async delete(id: string): Promise<ClientConfigDocument | null> {
-    const isObjectId = isObjectIdOrHexString(id);
-
-    if (!isObjectId) {
-      throw new BadRequestException('Invalid config id!');
-    }
-
     return await this.clientConfigModel.findByIdAndDelete(id);
   }
 }

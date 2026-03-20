@@ -28,8 +28,4 @@ export class UpdateClientConfigDto {
   @ValidateNested()
   @Type(() => UpdateUnderMaintenanceDto)
   underMaintenance?: UpdateUnderMaintenanceDto;
-
-  @IsOptional()
-  @IsBoolean()
-  isDeleted?: boolean;
 }

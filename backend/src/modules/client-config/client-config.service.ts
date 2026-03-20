@@ -200,9 +200,7 @@ export class ClientConfigService {
 
   async deleteById(id: string) {
     try {
-      // console.log('UpdateId: ', id);
-
-      await this.updateById(id, { isDeleted: true });
+      await this.clientConfigRepo.delete(id);
 
       return {
         message: 'Config deleted successfully',

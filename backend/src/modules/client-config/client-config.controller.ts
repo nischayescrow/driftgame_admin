@@ -1,4 +1,6 @@
 import {
+  BadGatewayException,
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -13,6 +15,7 @@ import {
 import { ClientConfigService } from './client-config.service';
 import { CreateClientConfigDto } from './dto/create-config.dto';
 import { UpdateClientConfigDto } from './dto/update-config.dto';
+import { isObjectIdOrHexString } from 'mongoose';
 
 @Controller('admin/client-config')
 export class ClientConfigController {
@@ -21,12 +24,22 @@ export class ClientConfigController {
   @Get('find/:id')
   @HttpCode(HttpStatus.OK)
   findById(@Param('id') id: string) {
+    const isObjectId = isObjectIdOrHexString(id);
+
+    if (!isObjectId) {
+      throw new BadRequestException('Invalid config id!');
+    }
+
     return this.clientConfigService.findById(id.trim());
   }
 
   @Get('get/version/:version')
   @HttpCode(HttpStatus.OK)
   findByBuildVersion(@Param('version') version: string) {
+    if (version.trim().length <= 0) {
+      throw new BadGatewayException('Version is required!');
+    }
+
     return this.clientConfigService.findByVersion(version.trim());
   }
 
@@ -42,6 +55,12 @@ export class ClientConfigController {
     @Param('id') id: string,
     @Body() updateClientConfigDto: UpdateClientConfigDto,
   ) {
+    const isObjectId = isObjectIdOrHexString(id);
+
+    if (!isObjectId) {
+      throw new BadRequestException('Invalid config id!');
+    }
+
     return this.clientConfigService.updateById(
       id.trim(),
       updateClientConfigDto,
@@ -51,6 +70,12 @@ export class ClientConfigController {
   @Delete('delete/:id')
   @HttpCode(HttpStatus.OK)
   deleteById(@Param('id') id: string) {
+    const isObjectId = isObjectIdOrHexString(id);
+
+    if (!isObjectId) {
+      throw new BadRequestException('Invalid config id!');
+    }
+
     return this.clientConfigService.deleteById(id.trim());
   }
 }
