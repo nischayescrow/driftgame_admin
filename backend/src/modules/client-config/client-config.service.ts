@@ -11,8 +11,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ClientConfig } from './schemas/client-config.schema';
 import { ClientConfigRepository } from './repositories/client-config.repository';
 import { ClientConfigProj } from './types/client-config.type';
-import { REDIS_CLIENT } from '../redis/redis.module';
 import Redis from 'ioredis';
+import { REDIS_CLIENT } from '../redis/redis.constant';
 
 @Injectable()
 export class ClientConfigService {
@@ -66,6 +66,39 @@ export class ClientConfigService {
           updateRequired: findConfig.updateRequired,
           underMaintenance: findConfig.underMaintenance,
         },
+      };
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async findAll(limit: number = 10, page: number = 0) {
+    try {
+      const findConfigs = await this.clientConfigRepo.findAll(limit, page);
+
+      // console.log(findConfigs);
+
+      if (!findConfigs.data || findConfigs.data.length <= 0) {
+        return { data: [], total: 0, page, limit };
+      }
+
+      const data = findConfigs.data.map((config) => {
+        return {
+          id: config.id,
+          clientBuildVersion: config.clientBuildVersion,
+          updateRequired: config.updateRequired,
+          underMaintenance: config.underMaintenance,
+          createdAt: config.createdAt,
+          updatedAt: config.updatedAt,
+        };
+      });
+
+      return {
+        data,
+        total: findConfigs.total,
+        page,
+        limit,
       };
     } catch (error) {
       console.log(error);

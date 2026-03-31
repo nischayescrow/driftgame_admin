@@ -19,6 +19,7 @@ import type { AppDispatch } from "../../store/store";
 import { removeUser } from "../../features/user/user.slice";
 import { logout } from "../../features/auth/services/auth.service";
 import { startLoading, stopLoading } from "../common/loader/loader.slice";
+import { IoMdSettings } from "react-icons/io";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
@@ -210,6 +211,25 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                   </ul>
                 </AccordionDetails>
               </Accordion>
+            </li>
+
+            <li>
+              <NavLink
+                to="/client-config"
+                className={({ isActive }) =>
+                  `w-full p-2 flex gap-2 items-center ${isActive ? "bg-primary text-white" : "text-black"} rounded-md text-sm 
+                font-semibold`
+                }
+              >
+                <IoMdSettings
+                  className="text-xl min-w-5 min-h-5"
+                  style={{
+                    width: openSideBar ? "20px" : "24px",
+                    height: openSideBar ? "20px" : "24px",
+                  }}
+                />
+                {openSideBar && <span>Client Config</span>}
+              </NavLink>
             </li>
           </ul>
         </div>

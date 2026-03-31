@@ -21,25 +21,31 @@ function App() {
   const dispatch = useDispatch<AppDispatch>();
 
   const verifyMe = async () => {
-    dispatch(startLoading());
-    const verifyMeRes = await verifyUser();
-    dispatch(stopLoading());
-    console.log("verifyMeRes: ", verifyMeRes);
-
-    if (!verifyMeRes && ProtectedRoutes.includes(location.pathname)) {
-      console.log("Navigate to login page!!");
-
+    try {
       dispatch(startLoading());
-      await logout();
-      setTimeout(() => dispatch(stopLoading()), 500);
-      // console.log("logoutRes: ", logoutRes);
+      const verifyMeRes = await verifyUser();
+      dispatch(stopLoading());
+      console.log("verifyMeRes: ", verifyMeRes);
 
-      dispatch(removeUser());
-      navigate("/", { replace: true });
-    }
+      if (!verifyMeRes && ProtectedRoutes.includes(location.pathname)) {
+        console.log("Navigate to login page!!");
 
-    if (verifyMeRes && AuthRoutes.includes(location.pathname)) {
-      navigate("/dashboard");
+        dispatch(startLoading());
+        await logout();
+        setTimeout(() => dispatch(stopLoading()), 500);
+        // console.log("logoutRes: ", logoutRes);
+
+        dispatch(removeUser());
+        navigate("/", { replace: true });
+      }
+
+      if (verifyMeRes && AuthRoutes.includes(location.pathname)) {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      dispatch(stopLoading());
     }
   };
 

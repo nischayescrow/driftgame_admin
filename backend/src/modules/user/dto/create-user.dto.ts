@@ -3,10 +3,11 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
-import { UserStatus } from '../schemas/user.schema';
+import { UserAccStatus, UserLiveStatus } from '../schemas/user.schema';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -26,16 +27,30 @@ export class CreateUserDto {
   password?: string;
 
   @IsOptional()
-  @IsNotEmpty()
   @IsBoolean()
   email_verified?: boolean;
 
   @IsOptional()
-  @IsNotEmpty()
   @IsString()
   picture?: string;
 
   @IsOptional()
-  @IsEnum(UserStatus)
-  status?: UserStatus;
+  @IsNumber()
+  avatar_id?: number;
+
+  @IsOptional()
+  @IsEnum(UserLiveStatus)
+  live_status?: UserLiveStatus;
+
+  @IsOptional()
+  @IsEnum(UserAccStatus)
+  acc_status?: UserAccStatus;
+
+  @IsOptional()
+  @IsNumber()
+  totalCoins?: number;
+
+  @IsOptional()
+  @IsNumber()
+  totalXp?: number;
 }

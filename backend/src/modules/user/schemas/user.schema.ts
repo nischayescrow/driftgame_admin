@@ -1,11 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 
-export enum UserStatus {
-  NOTACTIVE = 0,
+export enum UserAccStatus {
+  BLOCKED = 0,
   ACTIVE = 1,
-  BLOCKED = 2,
-  DELETED = 3,
+  DELETED = 2,
+}
+
+export enum UserLiveStatus {
+  OFFLINE = 0,
+  ONLINE = 1,
+  IN_GAME = 2,
+  IN_PRIVATE_ROOM = 3,
 }
 
 @Schema({
@@ -21,32 +27,29 @@ export class User {
   @Prop({ type: String, required: true, unique: true, trim: true })
   email: string;
 
-  @Prop({ type: String, required: false, trim: true })
+  @Prop({ type: String, trim: true, default: null })
   password: string;
 
   @Prop({ type: Boolean, default: false })
   email_verified: boolean;
 
-  @Prop({ type: String, required: false })
+  @Prop({ type: String, default: null })
   picture: string;
 
-  @Prop({ type: Number, enum: UserStatus, default: UserStatus.NOTACTIVE })
-  status: number;
+  @Prop({ type: Number, required: true, default: 0 })
+  avatar_id: number;
 
-  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'User' }], default: [] })
-  friends: Types.ObjectId[];
+  @Prop({ type: Number, enum: UserLiveStatus, default: UserLiveStatus.OFFLINE })
+  live_status: number;
 
-  @Prop({
-    type: [{ type: SchemaTypes.ObjectId, ref: 'FriendReq' }],
-    default: [],
-  })
-  sentFriendRequests: Types.ObjectId[];
+  @Prop({ type: Number, enum: UserAccStatus, default: UserAccStatus.BLOCKED })
+  acc_status: number;
 
-  @Prop({
-    type: [{ type: SchemaTypes.ObjectId, ref: 'FriendReq' }],
-    default: [],
-  })
-  receviedFriendRequests: Types.ObjectId[];
+  @Prop({ type: Number, default: 0 })
+  totalCoins: number;
+
+  @Prop({ type: Number, default: 0 })
+  totalXp: number;
 
   createdAt?: Date;
   updatedAt?: Date;

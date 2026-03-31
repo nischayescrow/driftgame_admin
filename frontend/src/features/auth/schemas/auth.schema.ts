@@ -40,19 +40,19 @@ export const SignUpSchema = z.object({
     .trim()
     .min(1, "Password required!")
     .min(8, "Password must have minimum strength of 8 characters")
-    .refine((value) => /\d/.test(value), "Password must have 1 digit")
-    .refine(
-      (value) => /[a-z]/.test(value),
-      "Password must have 1 small alphabet",
-    )
-    .refine(
-      (value) => /[A-Z]/.test(value),
-      "Password must have 1 capital alphabet",
-    )
-    .refine(
-      (value) => /[~`!@#$%\^&*\(\)_\-+=\{\}\[\]\|\:;\"\'<,>\.?\/]/.test(value),
-      "Password must have 1 special character",
-    ),
+    .refine((value) => /\d/.test(value), "Password must have 1 digit"),
+  // .refine(
+  //   (value) => /[a-z]/.test(value),
+  //   "Password must have 1 small alphabet",
+  // )
+  // .refine(
+  //   (value) => /[A-Z]/.test(value),
+  //   "Password must have 1 capital alphabet",
+  // )
+  // .refine(
+  //   (value) => /[~`!@#$%\^&*\(\)_\-+=\{\}\[\]\|\:;\"\'<,>\.?\/]/.test(value),
+  //   "Password must have 1 special character",
+  // ),
 });
 
 export type SignUpSchemaType = z.infer<typeof SignUpSchema>;

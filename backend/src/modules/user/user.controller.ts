@@ -10,6 +10,7 @@ import {
   Req,
   HttpCode,
   HttpStatus,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,12 +22,18 @@ export class UserController {
 
   @Get('find/:id')
   @HttpCode(HttpStatus.OK)
-  findById(
+  async findById(
     @Param('id') id: string,
     @Query('all') all: boolean,
     @Query('pass') pass: boolean,
   ) {
-    return this.userService.findById(id.trim(), all, pass);
+    const findUser = await this.userService.findById(id.trim(), all);
+
+    if (!findUser || !findUser.data) {
+      throw new NotFoundException('User do not found!');
+    }
+
+    return findUser;
   }
 
   @Get('search')
@@ -38,21 +45,7 @@ export class UserController {
     @Query('all') all: boolean,
     @Query('pass') pass: boolean,
   ) {
-    if (!text || text.length < 1) {
-      return this.userService.findAll(limit, page, pass);
-    }
-
-    return this.userService.search(text, limit, page, all, pass);
-  }
-
-  @Get('get/all')
-  @HttpCode(HttpStatus.OK)
-  findAll(
-    @Query('limit') limit: number,
-    @Query('page') page: number,
-    @Query('pass') pass: boolean,
-  ) {
-    return this.userService.findAll(limit, page, pass);
+    return this.userService.search(text, limit, page, all);
   }
 
   @Post('create')

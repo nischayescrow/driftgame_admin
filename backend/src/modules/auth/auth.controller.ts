@@ -3,15 +3,12 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   HttpCode,
   Req,
-  Res,
   UnauthorizedException,
   InternalServerErrorException,
   HttpStatus,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import type { Request, Response } from 'express';
@@ -24,19 +21,55 @@ export class AuthController {
 
   @Get('verify/me')
   @HttpCode(HttpStatus.OK)
-  async verifyMe(@Req() req: Request) {
-    if (req.user) {
-      return { ok: true };
-    } else {
-      throw new UnauthorizedException();
+  async verifyMe() {
+    return {
+      ok: true,
+    };
+  }
+
+  @Post('signup/email')
+  @HttpCode(HttpStatus.CREATED)
+  async signupWithEmail(@Body() createUserDto: CreateUserDto) {
+    return this.authService.singupWithEmail(createUserDto);
+  }
+
+  @Post('login/email')
+  @HttpCode(HttpStatus.OK)
+  async loginWithEmail(
+    @Body() emailLoginDto: EmailLoginDto,
+    @Res() res: Response,
+  ) {
+    const loginRes = await this.authService.loginWithEmail(emailLoginDto);
+
+    // console.log('loginRes: ', loginRes);
+
+    if (!loginRes || !loginRes.access_token || !loginRes.refresh_token) {
+      throw new InternalServerErrorException('Failed to login!');
     }
+
+    const refresh_token_expires = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    );
+
+    res.cookie('refresh_token', loginRes.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV! === 'production',
+      sameSite: process.env.NODE_ENV! === 'production' ? 'none' : 'strict',
+      path: '/',
+      expires: refresh_token_expires,
+    });
+
+    return res.json({
+      message: loginRes.message,
+      access_token: loginRes.access_token,
+      data: loginRes.data,
+    });
   }
 
   @Get('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Req() req: Request, @Res() res: Response) {
     const refresh_token = req.cookies['refresh_token'];
-    // console.log('refresh_token', refresh_token);
 
     if (!refresh_token) {
       throw new UnauthorizedException();
@@ -65,72 +98,17 @@ export class AuthController {
     return res.json({
       message: refreshRes.message,
       access_token: refreshRes.access_token,
-      user: refreshRes.user,
-    });
-  }
-
-  @Post('signup/email')
-  @HttpCode(HttpStatus.CREATED)
-  async signupWithEmail(@Body() createUserDto: CreateUserDto) {
-    return this.authService.singupWithEmail(createUserDto);
-  }
-
-  @Post('login/email')
-  @HttpCode(HttpStatus.OK)
-  async loginWithEmail(
-    @Res() res: Response,
-    @Body() emailLoginDto: EmailLoginDto,
-  ) {
-    const loginRes = await this.authService.loginWithEmail(emailLoginDto);
-
-    if (!loginRes || !loginRes.access_token || !loginRes.refresh_token) {
-      throw new InternalServerErrorException('Failed to login!');
-    }
-
-    const refresh_token_expires = new Date(
-      Date.now() + 7 * 24 * 60 * 60 * 1000,
-    );
-
-    res.cookie('refresh_token', loginRes.refresh_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV! === 'production',
-      sameSite: process.env.NODE_ENV! === 'production' ? 'none' : 'strict',
-      path: '/',
-      expires: refresh_token_expires,
-    });
-
-    return res.json({
-      message: loginRes.message,
-      access_token: loginRes.access_token,
-      user: loginRes.user,
+      data: refreshRes.data,
     });
   }
 
   @Get('logout')
-  @HttpCode(HttpStatus.OK)
-  async logout(@Req() req: Request, @Res() res: Response) {
-    if (!req.user || !req.session || !req.session.session_id) {
-      throw new UnauthorizedException();
+  @HttpCode(HttpStatus.CREATED)
+  async logoutUser(@Req() req: Request) {
+    if (!req.user) {
+      throw new UnauthorizedException('Session expired, Please login again!');
     }
 
-    const logoutRes = await this.authService.logout(req.user.id);
-
-    // console.log('logoutRes: ', logoutRes);
-
-    if (!logoutRes) {
-      throw new InternalServerErrorException('Failed to logout!');
-    }
-
-    res.cookie('refresh_token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV! === 'production',
-      sameSite: process.env.NODE_ENV! === 'production' ? 'none' : 'strict',
-      path: '/',
-      maxAge: 0,
-    });
-
-    return res.json({
-      message: logoutRes.message,
-    });
+    return this.authService.logout(req.user.id);
   }
 }

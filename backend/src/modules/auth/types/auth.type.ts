@@ -1,16 +1,22 @@
-import { UserDocument } from '../../user/schemas/user.schema';
+import { findByIdResType } from 'src/modules/user/types/user.type';
 
 export interface LoginUserRes {
   message: string;
-  session: string;
-  user: Partial<UserDocument>;
+  data: findByIdResType;
   access_token: string;
   refresh_token: string;
 }
 
-export interface verifySessionRes {
-  session: SessionHash;
-  user: UserDocument;
+export interface TokenPayloadType {
+  user_id: string;
+  session_id: string;
+  isRefreshToken?: boolean;
+}
+
+export enum SessionStatus {
+  BLOCKED = 0,
+  ACTIVE = 1,
+  LOGOUT = 2,
 }
 
 export interface SessionHash {
@@ -19,16 +25,10 @@ export interface SessionHash {
   hashedToken: string;
   status: number;
   createdAt: number;
+  lastSeen?: number;
 }
 
-export interface TokenPayloadType {
-  user_id: string;
-  session_id: string;
-}
-
-export enum SessionStatus {
-  NOTACTIVE = 0,
-  ACTIVE = 1,
-  BLOCKED = 2,
-  LOGOUT = 3,
+export interface verifySessionRes {
+  session: SessionHash;
+  user: findByIdResType;
 }

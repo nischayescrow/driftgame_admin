@@ -79,7 +79,7 @@ const SignUp = () => {
           {/* Firstname */}
           <div className="mb-3">
             <Controller
-              name="email"
+              name="first_name"
               control={control}
               render={({ field: { onChange, value, name } }) => (
                 <>
@@ -103,7 +103,7 @@ const SignUp = () => {
           {/* Lastname */}
           <div className="mb-3">
             <Controller
-              name="email"
+              name="last_name"
               control={control}
               render={({ field: { onChange, value, name } }) => (
                 <>

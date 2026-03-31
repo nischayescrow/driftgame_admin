@@ -18,7 +18,7 @@ export class AuthMiddleware implements NestMiddleware {
     try {
       const authorization = req.headers.authorization;
       const token = authorization?.split(' ')[1];
-      const path = req.originalUrl;
+      const path = req.url;
 
       console.log('Middleware: ', path);
       console.log('authorization: ', authorization);
@@ -37,12 +37,14 @@ export class AuthMiddleware implements NestMiddleware {
         throw new UnauthorizedException();
       }
 
+      console.log('access_tokenDecoded: ', tokenDecoded);
+
       const userData = await this.authService.verifySession(
         tokenDecoded.session_id,
         tokenDecoded.user_id,
       );
 
-      // console.log('userData: ', userData);
+      console.log('AuthMiddleware-userData: ', userData);
 
       if (!userData) {
         throw new UnauthorizedException(
@@ -50,7 +52,7 @@ export class AuthMiddleware implements NestMiddleware {
         );
       }
 
-      // console.log('Authenticated:userData: ', userData);
+      console.log('Authenticated:userData: ', userData);
 
       req.user = userData.user;
       req.session = userData.session;

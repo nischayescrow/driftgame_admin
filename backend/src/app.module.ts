@@ -18,6 +18,7 @@ import { GamemodeModule } from './modules/gamemode/gamemode.module';
 import { PlayerlevelModule } from './modules/playerlevel/playerlevel.module';
 import { CarModule } from './modules/car/car.module';
 import { ClientConfigModule } from './modules/client-config/client-config.module';
+import { LeaderboardModule } from './modules/leaderboard/leaderboard.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { ClientConfigModule } from './modules/client-config/client-config.module
     PlayerlevelModule,
     CarModule,
     ClientConfigModule,
+    LeaderboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

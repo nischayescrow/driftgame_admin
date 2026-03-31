@@ -1,66 +1,88 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UserStatus } from './schemas/user.schema';
-import { Types } from 'mongoose';
+import { UserAccStatus } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { FindAllUsersProj, UserProj } from './types/user.type';
+import { findByIdResType } from './types/user.type';
 import { UserRepository } from './repositories/user.repository';
-import { FriendReqRepository } from './repositories/friendRequest.repository';
+import Redis from 'ioredis';
+import { isObjectIdOrHexString } from 'mongoose';
+import { REDIS_CLIENT } from '../redis/redis.constant';
+import { LeaderboardService } from '../leaderboard/leaderboard.service';
+import { GamemodeService } from '../gamemode/gamemode.service';
+import { LeaderboardScope } from '../leaderboard/schemas/leaderboard.schema';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepo: UserRepository,
-    private readonly friendReqRepo: FriendReqRepository,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    // @Inject(forwardRef(() => GameSettingService))
+    // private readonly gameSettingService: GameSettingService,
+    @Inject(forwardRef(() => LeaderboardService))
+    private readonly leaderBoardService: LeaderboardService,
+    private readonly gameModeService: GamemodeService,
   ) {}
 
-  private userDataProjection: UserProj = {
-    first_name: 1,
-    last_name: 1,
-    email: 1,
-    email_verified: 1,
-    picture: 1,
-    status: 1,
-    friends: 1,
-    sentFriendRequests: 1,
-    receviedFriendRequests: 1,
-    _id: 1,
-    createdAt: 1,
-    updatedAt: 1,
-  };
-
-  private findAllUserProj: FindAllUsersProj = {
-    first_name: 1,
-    last_name: 1,
-    email: 1,
-    email_verified: 1,
-    picture: 1,
-    status: 1,
-    _id: 1,
-  };
-
-  async findById(id: string, all: boolean = false, pass: boolean = false) {
+  async findById(
+    id: string,
+    all: boolean = false,
+  ): Promise<{ data: findByIdResType | null }> {
     try {
-      const findUser = await this.userRepo.findById(
-        id,
-        all,
-        pass
-          ? { ...this.userDataProjection, password: 1 }
-          : this.userDataProjection,
-      );
+      const isObjectId = isObjectIdOrHexString(id);
 
-      // console.log('findUser-findById', findUser);
-
-      if (!findUser) {
-        throw new BadRequestException('User do not found!');
+      if (!isObjectId) {
+        throw new BadRequestException('Invalid user id!');
       }
 
-      return findUser;
+      //Get data from redis if exist
+      const getDataFromRedis = await this.redis.get(`userData:${id}`);
+
+      if (getDataFromRedis) {
+        console.log('From redis');
+        const data: findByIdResType = JSON.parse(getDataFromRedis);
+
+        return { data };
+      }
+
+      const findUser = await this.userRepo.findById(id, all);
+
+      console.log('findUser-findById', findUser);
+
+      if (!findUser) {
+        return { data: null };
+      }
+
+      let data: findByIdResType = {
+        id: findUser.id,
+        first_name: findUser.first_name,
+        last_name: findUser.last_name,
+        email: findUser.email,
+        email_verified: findUser.email_verified,
+        picture: findUser.picture,
+        avatar_id: findUser.avatar_id,
+        totalCoins: findUser.totalCoins,
+        totalXp: findUser.totalXp,
+        acc_status: findUser.acc_status,
+        live_status: findUser.live_status,
+      };
+
+      //Store data in redis for 4 hr
+      await this.redis.set(
+        `userData:${findUser.id}`,
+        JSON.stringify(data),
+        'EX',
+        4 * 60 * 60,
+      );
+
+      return { data };
     } catch (error) {
       console.log(error);
       throw error;
@@ -73,17 +95,39 @@ export class UserService {
     pass: boolean = false,
   ) {
     try {
-      const findUser = await this.userRepo.findByEmail(
-        email,
-        all,
-        pass
-          ? { ...this.userDataProjection, password: 1 }
-          : this.userDataProjection,
-      );
+      const findUser = await this.userRepo.findByEmail(email, all);
+
+      if (!findUser) {
+        return { data: null };
+      }
 
       // console.log('findUser', findUser);
 
-      return findUser;
+      let data: findByIdResType = {
+        id: findUser.id,
+        first_name: findUser.first_name,
+        last_name: findUser.last_name,
+        email: findUser.email,
+        email_verified: findUser.email_verified,
+        picture: findUser.picture,
+        avatar_id: findUser.avatar_id,
+        totalCoins: findUser.totalCoins,
+        totalXp: findUser.totalXp,
+        acc_status: findUser.acc_status,
+        live_status: findUser.live_status,
+      };
+
+      //Store user data in redis for 4 hr
+      await this.redis.set(
+        `userData:${findUser.id}`,
+        JSON.stringify(data),
+        'EX',
+        4 * 60 * 60,
+      );
+
+      if (pass) data.password = findUser.password;
+
+      return { data };
     } catch (error) {
       console.log(error);
       throw error;
@@ -93,54 +137,33 @@ export class UserService {
   async search(
     text: string,
     limit: number = 10,
-    page: number = 1,
+    page: number = 0,
     all: boolean = false,
-    pass: boolean = false,
   ) {
     try {
-      const findUsers = await this.userRepo.search(
-        text,
-        limit,
-        page,
-        all,
-        pass ? { ...this.findAllUserProj, password: 1 } : this.findAllUserProj,
-      );
+      const findUsers = await this.userRepo.search(text, limit, page, all);
 
       // console.log(findUsers);
 
-      return {
-        data: findUsers.users,
-        total: findUsers.total,
-        page,
-        limit,
-      };
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
+      if (!findUsers.users || findUsers.users.length <= 0) {
+        return { data: [], total: 0, page, limit };
+      }
 
-  async findAll(limit: number = 10, page: number = 1, pass: boolean = false) {
-    let findAllUserProj: FindAllUsersProj = {
-      first_name: 1,
-      last_name: 1,
-      email: 1,
-      email_verified: 1,
-      picture: 1,
-      status: 1,
-      _id: 1,
-    };
-    try {
-      const findUsers = await this.userRepo.findAll(
-        limit,
-        page,
-        pass ? { ...this.findAllUserProj, password: 1 } : this.findAllUserProj,
-      );
-
-      // console.log(findUsers);
+      const data = findUsers.users.map((usr) => {
+        return {
+          id: usr.id,
+          first_name: usr.first_name,
+          last_name: usr.last_name,
+          email: usr.email,
+          email_verified: usr.email_verified,
+          picture: usr.picture,
+          acc_status: usr.acc_status,
+          live_status: usr.live_status,
+        };
+      });
 
       return {
-        data: findUsers.users,
+        data,
         total: findUsers.total,
         page,
         limit,
@@ -155,7 +178,7 @@ export class UserService {
     try {
       const findUser = await this.findByEmail(createUserDto.email, true);
 
-      if (findUser) {
+      if (findUser.data) {
         throw new BadRequestException('User already registered!');
       }
 
@@ -163,13 +186,38 @@ export class UserService {
         createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
       }
 
-      // if (createUserDto.email_verified) {
-      //   createUserDto.status = UserStatus.ACTIVE;
-      // }
+      createUserDto.acc_status = UserAccStatus.ACTIVE;
 
-      createUserDto.status = UserStatus.ACTIVE;
+      const created = await this.userRepo.create(createUserDto);
 
-      await this.userRepo.create(createUserDto);
+      console.log('Created-USer: ', created);
+
+      // create user default Game settings
+      // await this.gameSettingService.create(createdUser.id, DefaultGameSetting);
+
+      // create user default leaderboards
+      await this.leaderBoardService.create({
+        user_id: created.id,
+        scope: LeaderboardScope.GLOBAL,
+      });
+
+      const getAllGameModes = await this.gameModeService.findAll(10, 1, true);
+
+      if (
+        getAllGameModes &&
+        getAllGameModes.data &&
+        getAllGameModes.data.length > 0
+      ) {
+        await Promise.all(
+          getAllGameModes.data.map(async (mode) => {
+            await this.leaderBoardService.create({
+              user_id: created.id,
+              scope: LeaderboardScope.MODE,
+              game_mode: mode.id,
+            });
+          }),
+        );
+      }
 
       return {
         message: 'User created successfully',
@@ -188,10 +236,40 @@ export class UserService {
         updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
       }
 
-      await this.userRepo.update(id, updateUserDto);
+      // console.log('updateUserDto: ', updateUserDto);
+
+      const updated = await this.userRepo.update(id, updateUserDto);
+
+      if (!updated) {
+        throw new InternalServerErrorException(
+          'Error occured while updating user!',
+        );
+      }
+
+      const data: findByIdResType = {
+        id: updated.id,
+        first_name: updated.first_name,
+        last_name: updated.last_name,
+        email: updated.email,
+        email_verified: updated.email_verified,
+        picture: updated.picture,
+        avatar_id: updated.avatar_id,
+        totalCoins: updated.totalCoins,
+        totalXp: updated.totalXp,
+        live_status: updated.live_status,
+      };
+
+      //Update & Store user data in redis for 4 hr
+      await this.redis.set(
+        `userData:${updated.id}`,
+        JSON.stringify(data),
+        'EX',
+        4 * 60 * 60,
+      );
 
       return {
         message: 'User updated successfully',
+        data,
       };
     } catch (error) {
       console.log(error);
@@ -204,161 +282,19 @@ export class UserService {
       // console.log('UpdateId: ', id);
       const findUser = await this.findById(id, true);
 
-      await this.updateById(findUser.id, { status: UserStatus.DELETED });
+      if (!findUser || !findUser.data) {
+        throw new NotFoundException('User do not found!');
+      }
+
+      //remove data from redis
+      await this.redis.del(`userData:${findUser.data.id}`);
+
+      await this.updateById(findUser.data.id, {
+        acc_status: UserAccStatus.DELETED,
+      });
 
       return {
         message: 'User deleted successfully',
-      };
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
-  //User: Friend CRUD
-  async addFriend(id: string, friendId: string) {
-    try {
-      const findUser = await this.findById(id);
-      const findFriend = await this.findById(friendId);
-
-      if (!findUser || !findFriend) {
-        throw new NotFoundException('User do not found!');
-      }
-
-      await this.userRepo.addValInSetField(id, 'friends', friendId);
-
-      return {
-        message: 'Friends added successfully',
-      };
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
-  async removeFriend(id: string, friendId: string) {
-    try {
-      const findUser = await this.findById(id);
-      const findFriend = await this.findById(friendId);
-
-      if (!findUser || !findFriend) {
-        throw new NotFoundException('User do not found!');
-      }
-
-      await this.userRepo.removeValInSetField(id, 'friends', friendId);
-
-      return {
-        message: 'Friends removed successfully',
-      };
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
-  //User: sentFriendRequests
-  async addSentFriendReq(id: string, requestId: string) {
-    try {
-      const findUser = await this.findById(id);
-      const findReq = await this.friendReqRepo.findById(requestId);
-
-      if (!findUser) {
-        throw new NotFoundException('User do not found!');
-      }
-
-      if (!findReq) {
-        throw new NotFoundException('Request do not found!');
-      }
-
-      await this.userRepo.addValInSetField(id, 'sentFriendRequests', requestId);
-
-      return {
-        message: 'sentFriendRequests added successfully',
-      };
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
-  async removeSentFriendReq(id: string, requestId: string) {
-    try {
-      const findUser = await this.findById(id);
-      const findReq = await this.friendReqRepo.findById(requestId);
-
-      if (!findUser) {
-        throw new NotFoundException('User do not found!');
-      }
-
-      if (!findReq) {
-        throw new NotFoundException('Request do not found!');
-      }
-
-      await this.userRepo.removeValInSetField(
-        id,
-        'sentFriendRequests',
-        requestId,
-      );
-
-      return {
-        message: 'sentFriendRequests removed successfully',
-      };
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
-  //User: receivedFriendRequests
-  async addReceviedFriendReq(id: string, requestId: string) {
-    try {
-      const findUser = await this.findById(id);
-      const findReq = await this.friendReqRepo.findById(requestId);
-
-      if (!findUser) {
-        throw new NotFoundException('User do not found!');
-      }
-
-      if (!findReq) {
-        throw new NotFoundException('Request do not found!');
-      }
-
-      await this.userRepo.addValInSetField(
-        id,
-        'receviedFriendRequests',
-        requestId,
-      );
-
-      return {
-        message: 'receviedFriendRequests added successfully',
-      };
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
-  async removeReceviedFriendReq(id: string, requestId: string) {
-    try {
-      const findUser = await this.findById(id);
-      const findReq = await this.friendReqRepo.findById(requestId);
-
-      if (!findUser) {
-        throw new NotFoundException('User do not found!');
-      }
-
-      if (!findReq) {
-        throw new NotFoundException('Request do not found!');
-      }
-
-      await this.userRepo.removeValInSetField(
-        id,
-        'receviedFriendRequests',
-        requestId,
-      );
-
-      return {
-        message: 'receviedFriendRequests removed successfully',
       };
     } catch (error) {
       console.log(error);

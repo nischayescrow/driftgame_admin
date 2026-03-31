@@ -48,13 +48,13 @@ const Login = () => {
         setUser({
           access_token: loginRes.data.access_token,
           data: {
-            id: loginRes.data.user.id,
-            first_name: loginRes.data.user.first_name,
-            last_name: loginRes.data.user.last_name,
-            email: loginRes.data.user.email,
-            email_verified: loginRes.data.user.email_verified,
-            picture: loginRes.data.user.picture,
-            status: loginRes.data.user.status,
+            id: loginRes.data.data.id,
+            first_name: loginRes.data.data.first_name,
+            last_name: loginRes.data.data.last_name,
+            email: loginRes.data.data.email,
+            email_verified: loginRes.data.data.email_verified,
+            picture: loginRes.data.data.picture,
+            status: loginRes.data.data.status,
           },
         }),
       );
@@ -172,21 +172,6 @@ const Login = () => {
               Signup
             </NavLink>
           </p>
-
-          {/* <div className="my-5 flex items-center gap-x-3">
-            <p className="w-1/2 h-px bg-slate-300"></p>
-            <p className="text-nowrap">Sign in with</p>
-            <p className="w-1/2 h-px bg-slate-300"></p>
-          </div> */}
-
-          {/* <div className="flex justify-center items-center">
-            <button
-              type="button"
-              className="p-1 border border-slate-300 rounded-sm cursor-pointer hover:bg-slate-100"
-            >
-              <FcGoogle className="w-8 h-8" />
-            </button>
-          </div> */}
         </form>
       </div>
     </div>

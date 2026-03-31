@@ -101,7 +101,7 @@ const Users = () => {
       width: 130,
     },
     {
-      field: "status",
+      field: "acc_status",
       headerName: "Account status",
       type: "number",
       width: 130,
@@ -120,6 +120,31 @@ const Users = () => {
 
           {value === 3 && (
             <p className="text-orange-600 font-semibold">Deleted</p>
+          )}
+        </>
+      ),
+    },
+    {
+      field: "live_status",
+      headerName: "Live status",
+      type: "number",
+      width: 130,
+      align: "center",
+      headerAlign: "center",
+      renderCell: ({ value }) => (
+        <>
+          {value === 0 && (
+            <p className="text-slate-500 font-semibold">OFFLINE</p>
+          )}
+
+          {value === 1 && (
+            <p className="text-green-600 font-semibold">ONLINE</p>
+          )}
+
+          {value === 2 && <p className="text-red-600 font-semibold">IN GAME</p>}
+
+          {value === 3 && (
+            <p className="text-orange-600 font-semibold">IN PRIVATE ROOM</p>
           )}
         </>
       ),
@@ -154,13 +179,14 @@ const Users = () => {
       const fetchedUsers: UserDoc[] = getAllUsersRes.data.data.map(
         (usr: UserDoc) => {
           return {
+            id: usr.id,
             first_name: usr.first_name,
             last_name: usr.last_name,
             email: usr.email,
             email_verified: usr.email_verified,
             picture: usr.picture,
-            status: usr.status,
-            id: usr._id,
+            acc_status: usr.acc_status,
+            live_status: usr.live_status,
           };
         },
       );

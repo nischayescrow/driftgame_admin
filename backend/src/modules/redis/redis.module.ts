@@ -1,9 +1,8 @@
-import { Global, Module, Provider } from '@nestjs/common';
+import { forwardRef, Global, Module, Provider } from '@nestjs/common';
 import { RedisService } from './redis.service';
 import { RedisController } from './redis.controller';
 import Redis from 'ioredis';
-
-export const REDIS_CLIENT = 'REDIS_CLIENT';
+import { REDIS_CLIENT } from './redis.constant';
 
 const redisClientFactory: Provider<Redis> = {
   provide: REDIS_CLIENT,
@@ -14,8 +13,6 @@ const redisClientFactory: Provider<Redis> = {
       username: process.env.REDIS_USERNAME,
       password: process.env.REDIS_PASSWORD,
       keyPrefix: 'driftgame:',
-      lazyConnect: true,
-      maxRetriesPerRequest: 3,
     });
 
     client.on('connect', () => console.log('Connected Redis-Data'));
@@ -29,6 +26,6 @@ const redisClientFactory: Provider<Redis> = {
 @Module({
   controllers: [RedisController],
   providers: [redisClientFactory, RedisService],
-  exports: [redisClientFactory, RedisService],
+  exports: [REDIS_CLIENT, RedisService],
 })
 export class RedisModule {}

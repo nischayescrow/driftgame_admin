@@ -30,8 +30,17 @@ export class ClientConfigRepository {
     return await this.clientConfigModel.findOne({ _id: id });
   }
 
-  async findAll(): Promise<ClientConfigDocument[]> {
-    return await this.clientConfigModel.find({});
+  async findAll(
+    limit: number = 10,
+    page: number = 0,
+  ): Promise<{ data: ClientConfigDocument[]; total: number }> {
+    const skip = page * limit;
+    const totalConfigs = await this.clientConfigModel.countDocuments({});
+
+    return {
+      data: await this.clientConfigModel.find({}).limit(limit).skip(skip),
+      total: totalConfigs,
+    };
   }
 
   async update(

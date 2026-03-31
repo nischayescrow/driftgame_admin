@@ -96,13 +96,13 @@ api.interceptors.response.use(
         setUser({
           access_token: refresh.data.access_token,
           data: {
-            id: refresh.data.user.id,
-            first_name: refresh.data.user.first_name,
-            last_name: refresh.data.user.last_name,
-            email: refresh.data.user.email,
-            email_verified: refresh.data.user.email_verified,
-            picture: refresh.data.user.picture,
-            status: refresh.data.user.status,
+            id: refresh.data.data.id,
+            first_name: refresh.data.data.first_name,
+            last_name: refresh.data.data.last_name,
+            email: refresh.data.data.email,
+            email_verified: refresh.data.data.email_verified,
+            picture: refresh.data.data.picture,
+            status: refresh.data.data.status,
           },
         }),
       );

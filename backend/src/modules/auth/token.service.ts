@@ -17,7 +17,7 @@ export class TokenService {
 
   async signRefreshToken(payload: TokenPayloadType) {
     const refresh_token = await this.jwtService.signAsync(payload, {
-      secret: process.env.REFRESH_TOKEN_SECRET!,
+      secret: process.env.REFRESH_TOKEN_SECRET,
       expiresIn: process.env.REFRESH_EXPIRES_AT! as any,
     });
 
@@ -32,6 +32,7 @@ export class TokenService {
 
       return access_token_decoded;
     } catch (error) {
+      console.log(error);
       if (
         error instanceof TokenExpiredError ||
         error instanceof JsonWebTokenError
@@ -50,7 +51,10 @@ export class TokenService {
 
       return refresh_token_decoded;
     } catch (error) {
-      if (error instanceof TokenExpiredError) {
+      if (
+        error instanceof TokenExpiredError ||
+        error instanceof JsonWebTokenError
+      ) {
         return null;
       }
       throw error;

@@ -1,27 +1,20 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
-import { FriendReq, FriendReqSchema } from './schemas/friendReq.schema';
-import { FriendReqService } from './friendReq.service';
 import { UserRepository } from './repositories/user.repository';
-import { FriendReqRepository } from './repositories/friendRequest.repository';
+import { GamemodeModule } from '../gamemode/gamemode.module';
+import { LeaderboardModule } from '../leaderboard/leaderboard.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: FriendReq.name, schema: FriendReqSchema },
-    ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    forwardRef(() => LeaderboardModule),
+    GamemodeModule,
   ],
   controllers: [UserController],
-  providers: [
-    UserService,
-    FriendReqService,
-    UserRepository,
-    FriendReqRepository,
-  ],
-  exports: [UserService, FriendReqService, MongooseModule],
+  providers: [UserService, UserRepository],
+  exports: [UserService],
 })
 export class UserModule {}

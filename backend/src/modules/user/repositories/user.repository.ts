@@ -1,8 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isObjectIdOrHexString, Model, Types } from 'mongoose';
-import { User, UserDocument, UserStatus } from '../schemas/user.schema';
-import { FindAllUsersProj, UserProj } from '../types/user.type';
+import { User, UserAccStatus, UserDocument } from '../schemas/user.schema';
 
 @Injectable()
 export class UserRepository {
@@ -16,45 +20,40 @@ export class UserRepository {
     return await user.save();
   }
 
-  async findByEmail(
-    email: string,
-    all: boolean,
-    userProj: UserProj,
-  ): Promise<UserDocument | null> {
+  async findByEmail(email: string, all: boolean = false) {
     const findQuery = all
       ? {
           $and: [{ email }],
         }
       : {
-          $and: [{ email }, { status: UserStatus.ACTIVE }],
+          $and: [{ email }, { acc_status: UserAccStatus.ACTIVE }],
         };
 
-    return await this.userModel.findOne(findQuery, userProj);
-  }
+    const findUser = await this.userModel.findOne(findQuery);
 
-  async findById(
-    id: string,
-    all: boolean = false,
-    userProj: UserProj,
-  ): Promise<UserDocument | null> {
-    const isObjectId = isObjectIdOrHexString(id);
-
-    if (!isObjectId) {
-      throw new BadRequestException('Invalid user id!');
+    if (!findUser) {
+      return null;
     }
 
-    // console.log('findById: ', id);
+    return findUser;
+  }
 
+  async findById(id: string, all: boolean = false) {
     const findQuery = all
       ? {
           _id: id,
         }
       : {
-          _id: id,
-          status: UserStatus.ACTIVE,
+          $and: [{ _id: id }, { acc_status: UserAccStatus.ACTIVE }],
         };
 
-    return await this.userModel.findOne(findQuery, userProj);
+    const findUser = await this.userModel.findOne(findQuery);
+
+    if (!findUser) {
+      return null;
+    }
+
+    return findUser;
   }
 
   async search(
@@ -62,7 +61,6 @@ export class UserRepository {
     limit: number = 10,
     page: number = 0,
     all: boolean = false,
-    userProj: FindAllUsersProj,
   ): Promise<{ users: UserDocument[]; total: number }> {
     const findQuery = all
       ? {
@@ -81,7 +79,7 @@ export class UserRepository {
                 { email: { $regex: text, $options: 'i' } },
               ],
             },
-            { status: UserStatus.ACTIVE },
+            { acc_status: UserAccStatus.ACTIVE },
           ],
         };
 
@@ -89,65 +87,24 @@ export class UserRepository {
     const totalUsers = await this.userModel.countDocuments(findQuery);
 
     return {
-      users: await this.userModel
-        .find(findQuery, userProj)
-        .limit(limit)
-        .skip(skip),
+      users: await this.userModel.find(findQuery).limit(limit).skip(skip),
       total: totalUsers,
     };
   }
 
-  async findAll(
-    limit: number = 10,
-    page: number = 0,
-    userProj: FindAllUsersProj,
-  ): Promise<{ users: UserDocument[]; total: number }> {
-    const skip = page * limit;
-    const totalUsers = await this.userModel.countDocuments({});
-
-    return {
-      users: await this.userModel.find({}, userProj).limit(limit).skip(skip),
-      total: totalUsers,
-    };
+  async findAll(): Promise<UserDocument[]> {
+    return await this.userModel.find();
   }
 
   async update(
     id: string,
     data: Partial<UserDocument>,
   ): Promise<UserDocument | null> {
-    return await this.userModel.findByIdAndUpdate(id, data);
-  }
+    console.log('id', id, 'data: ', data);
 
-  async addValInSetField(
-    id: string,
-    fieldName: string,
-    value: string,
-  ): Promise<void> {
-    await this.userModel.updateOne(
-      { _id: id },
-      {
-        $addToSet: {
-          [fieldName]: new Types.ObjectId(value),
-        },
-      },
-      { upsert: false },
-    );
-  }
-
-  async removeValInSetField(
-    id: string,
-    fieldName: string,
-    value: string,
-  ): Promise<void> {
-    await this.userModel.updateOne(
-      { _id: id },
-      {
-        $pull: {
-          [fieldName]: new Types.ObjectId(value),
-        },
-      },
-      { upsert: false },
-    );
+    return await this.userModel.findByIdAndUpdate(id, data, {
+      returnDocument: 'after',
+    });
   }
 
   async delete(id: string): Promise<UserDocument | null> {
