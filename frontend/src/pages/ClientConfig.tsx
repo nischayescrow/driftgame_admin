@@ -1,21 +1,16 @@
-import MenuItem from "@mui/material/MenuItem";
-import toast from "react-hot-toast";
 import { FiPlus } from "react-icons/fi";
-import { LuFilter } from "react-icons/lu";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
 import { IoSearch } from "react-icons/io5";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import BlockLoader from "../components/common/loader/BlockLoader";
 import type { ClientConfigDoc } from "../features/client-config/client-config.type";
 import ActionButtons from "../components/ui/ActionButtons";
 import { fetchAllConfig } from "../features/client-config/services/client-config.service";
 
 const ClientConfig = () => {
-  let debounceTimerRef = useRef<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
-  const [fetchingLevel, setFetchingLevel] = useState(false);
+
   const [searchText, setSearchText] = useState("");
 
   const [totalConfigs, setTotalConfigs] = useState<number>(0);
@@ -24,16 +19,6 @@ const ClientConfig = () => {
     pageSize: 5,
   });
   const [configs, setConfig] = useState<ClientConfigDoc[]>([]);
-  const [addDialog, setAddDialog] = useState(false);
-  const [editDialog, setEditDialog] = useState<{
-    status: boolean;
-    actionType: "view" | "edit" | "delete" | null;
-    id: string | null;
-  }>({
-    status: false,
-    actionType: null,
-    id: null,
-  });
 
   const columns: GridColDef[] = [
     {
@@ -115,7 +100,7 @@ const ClientConfig = () => {
       sortable: false,
       filterable: false,
       renderCell: (params) => {
-        return <ActionButtons rowId={params.row.id} method={setEditDialog} />;
+        return <ActionButtons rowId={params.row.id} method={() => {}} />;
       },
     },
   ];
