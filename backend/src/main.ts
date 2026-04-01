@@ -13,7 +13,10 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: ['http://localhost:3001', 'https://driftgame-admin.netlify.app'],
+    origin: [
+      'http://localhost:3001',
+      'https://tranquil-haupia-04cfe1.netlify.app',
+    ],
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Auth'],
     credentials: true,
