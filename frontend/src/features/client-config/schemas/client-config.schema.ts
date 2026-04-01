@@ -1,42 +1,37 @@
 import * as z from "zod";
 
 // Add Mode schema
-export const AddLevelSchema = z.object({
-  level: z.coerce.number().min(1, "Level no. must be greater than 0!"),
-  xpToLevel: z.coerce
+export const AddConfigSchema = z.object({
+  clientBuildVersion: z.coerce
     .number()
-    .min(0, "XP to level no. must be greater or equal than 0!"),
-  displayName: z
+    .min(1, "Build version no. must be greater than 0!"),
+  updateRequired: z.boolean(),
+  currentStatus: z.boolean(),
+  upcomingStatus: z.boolean(),
+  message: z
     .string()
     .trim()
-    .min(1, "Display name is required!")
-    .min(3, "Display name must have minimum 3 characters"),
-  // .max(20, "Display name must have maximum 20 characters"),
+    .min(1, "Message is required!")
+    .min(3, "Message must have minimum 3 characters"),
 });
 
-export type AddLevelSchemaType = z.infer<typeof AddLevelSchema>;
+export type AddConfigSchemaType = z.infer<typeof AddConfigSchema>;
 
 // Edit user schema
-export const EditLevelSchema = z.object({
-  level: z.coerce
+export const EditConfigSchema = z.object({
+  clientBuildVersion: z.coerce
     .number()
-    .min(1, "Level no. must be greater than 0!")
+    .min(1, "Build version no. must be greater than 0!")
     .optional(),
-  xpToLevel: z.coerce
-    .number()
-    .min(0, "XP to level no. must be greater or equal than 0!")
-    .optional(),
-  displayName: z
+  updateRequired: z.boolean().optional(),
+  currentStatus: z.boolean().optional(),
+  upcomingStatus: z.boolean().optional(),
+  message: z
     .string()
     .trim()
-    .min(1, "Display name is required!")
-    .min(3, "Display name must have minimum 3 characters")
-    // .max(20, "Display name must have maximum 20 characters")
-    .optional(),
-  status: z.coerce
-    .number()
-    .refine((val) => [0, 1, 2].includes(val))
+    .min(1, "Message is required!")
+    .min(3, "Message must have minimum 3 characters")
     .optional(),
 });
 
-export type EditLevelSchemaType = z.infer<typeof EditLevelSchema>;
+export type EditConfigSchemaType = z.infer<typeof EditConfigSchema>;

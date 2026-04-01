@@ -25,7 +25,12 @@ function App() {
       dispatch(startLoading());
       const verifyMeRes = await verifyUser();
       dispatch(stopLoading());
-      console.log("verifyMeRes: ", verifyMeRes);
+      console.log(
+        "verifyMeRes: ",
+        verifyMeRes,
+        "location: ",
+        location.pathname,
+      );
 
       if (!verifyMeRes && ProtectedRoutes.includes(location.pathname)) {
         console.log("Navigate to login page!!");

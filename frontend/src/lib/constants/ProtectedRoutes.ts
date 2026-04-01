@@ -1,8 +1,10 @@
 export const ProtectedRoutes = [
   "/dashboard",
-  "/gamemodes",
   "/users",
+  "/cars",
+  "/gamemodes",
   "/playerlevels",
+  "/client-config",
 ];
 
 export const AuthRoutes = ["/", "/signup"];

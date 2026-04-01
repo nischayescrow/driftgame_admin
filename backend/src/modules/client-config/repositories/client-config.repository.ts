@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { isObjectIdOrHexString, Model } from 'mongoose';
+import { isObjectIdOrHexString, Model, PipelineStage } from 'mongoose';
 import {
   ClientConfig,
   ClientConfigDocument,
@@ -41,6 +41,48 @@ export class ClientConfigRepository {
       data: await this.clientConfigModel.find({}).limit(limit).skip(skip),
       total: totalConfigs,
     };
+  }
+
+  async search(
+    text: string,
+    limit: number = 10,
+    page: number = 0,
+  ): Promise<{ data: ClientConfigDocument[]; total: number }> {
+    const skip = page * limit;
+
+    const pipeline: PipelineStage[] = [];
+
+    pipeline.push({
+      $addFields: {
+        codeString: { $toString: '$clientBuildVersion' },
+      },
+    });
+
+    const searchRegex = new RegExp(text, 'i');
+
+    pipeline.push({
+      $match: { codeString: searchRegex },
+    });
+
+    pipeline.push({
+      $project: { codeString: 0 },
+    });
+
+    pipeline.push({
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: 'count' }],
+      },
+    });
+
+    const result = await this.clientConfigModel.aggregate(pipeline).exec();
+
+    const data: ClientConfigDocument[] = result[0]?.data || [];
+    const total: number = result[0]?.totalCount[0]?.count || 0;
+
+    // console.log('AggregationResult: ', { data, total });
+
+    return { data, total };
   }
 
   async update(

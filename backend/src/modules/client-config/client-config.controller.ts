@@ -33,10 +33,18 @@ export class ClientConfigController {
     return this.clientConfigService.findById(id.trim());
   }
 
-  @Get('get/all')
+  @Get('search')
   @HttpCode(HttpStatus.OK)
-  findAllConfig(@Query('limit') limit: number, @Query('page') page: number) {
-    return this.clientConfigService.findAll(limit, page);
+  searchLevel(
+    @Query('text') text: string,
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+  ) {
+    if (!text || text.length < 1) {
+      return this.clientConfigService.findAll(limit, page);
+    }
+
+    return this.clientConfigService.search(text, limit, page);
   }
 
   @Get('get/version/:version')
