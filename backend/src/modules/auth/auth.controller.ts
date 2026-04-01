@@ -103,12 +103,28 @@ export class AuthController {
   }
 
   @Get('logout')
-  @HttpCode(HttpStatus.CREATED)
-  async logoutUser(@Req() req: Request) {
+  @HttpCode(HttpStatus.OK)
+  async logoutUser(@Req() req: Request, @Res() res: Response) {
     if (!req.user) {
       throw new UnauthorizedException('Session expired, Please login again!');
     }
 
-    return this.authService.logout(req.user.id);
+    const logoutRes = await this.authService.logout(req.user.id);
+
+    if (!logoutRes || !logoutRes.status) {
+      throw new InternalServerErrorException('Error occured while logout!');
+    }
+
+    res.cookie('refresh_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV! === 'production',
+      sameSite: process.env.NODE_ENV! === 'production' ? 'none' : 'strict',
+      path: '/',
+      maxAge: 0,
+    });
+
+    return res.json({
+      message: logoutRes.message,
+    });
   }
 }

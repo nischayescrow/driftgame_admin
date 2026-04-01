@@ -20,6 +20,7 @@ import { removeUser } from "../../features/user/user.slice";
 import { logout } from "../../features/auth/services/auth.service";
 import { startLoading, stopLoading } from "../common/loader/loader.slice";
 import { IoMdSettings } from "react-icons/io";
+import toast from "react-hot-toast";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
@@ -51,15 +52,22 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
   const handleDefaultSearch = () => {};
   const handleLogout = async () => {
-    dispatch(startLoading());
-    const logoutRes = await logout();
-    setTimeout(() => dispatch(stopLoading()), 500);
-    // console.log("logoutRes: ", logoutRes);
+    try {
+      dispatch(startLoading());
+      const logoutRes = await logout();
 
-    if (logoutRes && logoutRes.status === 200) {
-      closeUserMenu();
-      dispatch(removeUser());
-      navigate("/", { replace: true });
+      console.log("logoutRes: ", logoutRes);
+
+      if (logoutRes && logoutRes.status === 200) {
+        closeUserMenu();
+        dispatch(removeUser());
+        navigate("/", { replace: true });
+      }
+    } catch (error: any) {
+      console.log(error);
+      toast.error(error.response ? error.response.data.message : error.message);
+    } finally {
+      setTimeout(() => dispatch(stopLoading()), 500);
     }
   };
 

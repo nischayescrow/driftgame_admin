@@ -193,6 +193,7 @@ export class AuthService {
       await this.redis.del(`sessions:${user_id}`);
 
       return {
+        status: true,
         message: 'User logout successfully',
       };
     } catch (error) {
