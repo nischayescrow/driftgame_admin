@@ -31,7 +31,7 @@ const Login = () => {
     resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "admin.escrow@gmail.com",
-      password: "admin@2026",
+      password: "Admin@2026",
     },
   });
 
